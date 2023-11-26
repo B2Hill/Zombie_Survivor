@@ -29,9 +29,6 @@ bullet_group = pyg.sprite.Group()
 enemy_group = pyg.sprite.Group()
 obstacles_group = pygame.sprite.Group()
 
-#Timer
-Current_timer = 0
-
 #Collider
 def hitbox_collide(sprite1, sprite2):
     return sprite1.hitbox_rect.colliderect(sprite2.rect)
@@ -295,11 +292,13 @@ class Enemy(pyg.sprite.Sprite):
         #Image variables
         self.image = self.idle[0]
         
+        
 
         #Hitbox Variables
         self.hitbox_rect = self.image.get_rect(center = position)
         self.rect = self.hitbox_rect.copy()
         self.flipped = False
+        self.isDead = False
 
         #idle Var
         self.idletick = 0
@@ -316,6 +315,7 @@ class Enemy(pyg.sprite.Sprite):
         self.min_distance = MinDist
 
     def hunt_player(self):
+        
         player_vector = pyg.math.Vector2(player.rect.center)
         enemy_vector = pyg.math.Vector2(self.rect.center)
         distance = self.get_vector_distance(player_vector, enemy_vector)
@@ -330,6 +330,7 @@ class Enemy(pyg.sprite.Sprite):
 
         self.rect.centerx = self.position.x
         self.rect.centery = self.position.y
+        self.hitbox_rect.center = self.rect.center
 
     def get_vector_distance(self, Vect_1, Vect_2):
         if int(Vect_1[0] - Vect_2[0]) < 0:
@@ -394,10 +395,13 @@ class Enemy(pyg.sprite.Sprite):
             self.image = self.image
 
     def player_collision(self):
-        print("Hit Detecting")
-        if pyg.Rect.colliderect(self.rect, player.rect):
-            #self.kill()
-            player.get_dmg(self.dmg)
+        
+        if self.isDead == False:
+            if pyg.Rect.colliderect(self.rect, player.rect):
+                self.kill()
+                player.get_dmg(self.dmg)
+                self.isDead = True
+
 
     def update(self):
         if self.get_vector_distance(pyg.math.Vector2(player.hitbox_rect.center), pygame.math.Vector2(self.hitbox_rect.center)) < 100:
@@ -528,10 +532,9 @@ class Camera(pyg.sprite.Group):
         floor_offset_pos = self.floor_rect.topleft - self.offset
         screen.blit(background, floor_offset_pos)
         if DEBUG == True:
-            Player_Rect = player.rect.copy().move(-self.offset.x, -self.offset.y)
+            Player_Rect = player.hitbox_rect.copy().move(-self.offset.x, -self.offset.y)
             pyg.draw.rect(screen, RED, Player_Rect, width=2)
             Enemy_Rect = Testbadguy.rect.copy().move(-self.offset.x, -self.offset.y)
-            
             pyg.draw.rect(screen, RED, Enemy_Rect, width=2)
 
 
@@ -542,7 +545,7 @@ class Camera(pyg.sprite.Group):
 
 
 player = Player()
-Testbadguy = Enemy(MinDist= 300)
+Testbadguy = Enemy(MinDist= 200, position=(600,600))
 ui = UI()
 
 def main():
@@ -560,12 +563,7 @@ def main():
                 exit()
             if event.type == pyg.KEYDOWN:
                 if event.key == pyg.K_F1:
-                    if debug == False:
-                        debug = True
-                        #print("DEBUG ON")
-                    else:
-                        debug = False
-                        #print("DEBUG OFF")
+                    Testbadguy.isDead = False
             if event.type == pyg.KEYUP:
                 pass
 
