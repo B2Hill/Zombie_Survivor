@@ -3,7 +3,7 @@
 # Game Setup
 WIDTH = 1920
 HEIGHT = 1080
-
+DEBUG = True
 FPS = 60
 
 #Player Settings

@@ -1,7 +1,7 @@
 from typing import Iterable, Union
 import pygame as pyg
 from sys import exit
-import math, json
+import math, json, random
 
 
 
@@ -27,9 +27,15 @@ score_font = pyg.font.Font("src/font/PublicPixel.ttf",50)
 all_sprites_group = pyg.sprite.Group()
 bullet_group = pyg.sprite.Group()
 enemy_group = pyg.sprite.Group()
+obstacles_group = pygame.sprite.Group()
 
 #Timer
 Current_timer = 0
+
+#Collider
+def hitbox_collide(sprite1, sprite2):
+    return sprite1.hitbox_rect.colliderect(sprite2.rect)
+
 #Character Class
 class Player(pyg.sprite.Sprite):
     def __init__(self, Sprite_Location=rf'src\sprites\Player\Option_1\Zombie_Player.png', pos = (WIDTH // 2, HEIGHT //2)):
@@ -123,12 +129,6 @@ class Player(pyg.sprite.Sprite):
             self.image = self.image
             #print("NO FLIP!")
         
-
-    def DEBUG(self):
-        print(self.pos)
-
-    
-
     def update_frame(self):
         if self.currentAction == self.actions[self.currentActionState]:
                 #print(f"{self.currentAction} || {self.actions[self.currentActionState]}")
@@ -163,7 +163,6 @@ class Player(pyg.sprite.Sprite):
             self.currentFrame = 0
         #SKIP
                 
-
     def user_input(self):
         self.velocity_x = 0
         self.velocity_y = 0
@@ -199,7 +198,6 @@ class Player(pyg.sprite.Sprite):
         else:
             self.attack = False
 
-
     def is_idle(self):
         if self.idletick < 500:
             self.idletick += 1
@@ -232,10 +230,20 @@ class Player(pyg.sprite.Sprite):
             all_sprites_group.add(self.bullet)
             #print(spawn_bullet_pos)
 
-    def get_damg(self, ammmount):
-        pass
-        #TODO: After UI Class
-
+    def get_dmg(self, ammmount):
+        if ui.current_health > 0:
+            ui.current_health -= ammmount
+            self.health= ui.current_health
+            if ui.current_health > 0:
+                self.health = 0
+    def check_collision(self, direction):
+        for sprite in obstacles_group:
+            if sprite.rect.colliderect(self.hitbox_rect):
+                if direction == "horizontal":
+                    if self.velocity_x > 0:
+                        self.hitbox_rect.right = sprite.rect.left
+                    if self.velocity_x < 0:
+                        self.hitbox_rect.left = sprite.rect.right
     def movement(self):
         if self.velocity_x or self.velocity_y != 0:
             self.update_action(1)
@@ -300,6 +308,7 @@ class Enemy(pyg.sprite.Sprite):
         self.health = 20
         self.movement_speed = ENEMY_SPEED
         self.position = pygame.math.Vector2(position)
+        self.dmg = 10
 
         #Enemy Movement
         self.direction = pyg.math.Vector2()
@@ -307,7 +316,7 @@ class Enemy(pyg.sprite.Sprite):
         self.min_distance = MinDist
 
     def hunt_player(self):
-        player_vector = pyg.math.Vector2(player.hitbox_rect.center)
+        player_vector = pyg.math.Vector2(player.rect.center)
         enemy_vector = pyg.math.Vector2(self.rect.center)
         distance = self.get_vector_distance(player_vector, enemy_vector)
 
@@ -384,7 +393,16 @@ class Enemy(pyg.sprite.Sprite):
         else:
             self.image = self.image
 
+    def player_collision(self):
+        print("Hit Detecting")
+        if pyg.Rect.colliderect(self.rect, player.rect):
+            #self.kill()
+            player.get_dmg(self.dmg)
+
     def update(self):
+        if self.get_vector_distance(pyg.math.Vector2(player.hitbox_rect.center), pygame.math.Vector2(self.hitbox_rect.center)) < 100:
+            self.player_collision()
+
         self.update_frame()
         self.is_idle()
         self.hunt_player()
@@ -422,6 +440,16 @@ class Bullet(pyg.sprite.Sprite):
         if pyg.time.get_ticks() - self.spawn_time > self.bullet_lifetime:
             self.kill()
             #print("bullet dead")
+
+    def collisions(self):
+        hits = pyg.sprite.groupcollide(enemy_group, bullet_group, False, True, hitbox_collide)
+
+        for hit in hits:
+            hit.health -= 10
+
+            
+        if pyg.sprite.spritecollide(self, obstacles_group, False): #Wall Collisions
+            self.kill()
     
     def update(self):
         self.bullet_movement()
@@ -492,13 +520,20 @@ class Camera(pyg.sprite.Group):
         self.offset = pyg.math.Vector2(0,0)
 
     def C_draw(self):
-        self.offset.x = player.rect.centerx - WIDTH // 2
-        self.offset.y = player.rect.centery - HEIGHT // 2
+        self.offset.x = player.hitbox_rect.centerx - WIDTH // 2
+        self.offset.y = player.hitbox_rect.centery - HEIGHT // 2
 
         #Floor Draw
         self.floor_rect = background.get_rect(topleft = (0,0))
         floor_offset_pos = self.floor_rect.topleft - self.offset
         screen.blit(background, floor_offset_pos)
+        if DEBUG == True:
+            Player_Rect = player.rect.copy().move(-self.offset.x, -self.offset.y)
+            pyg.draw.rect(screen, RED, Player_Rect, width=2)
+            Enemy_Rect = Testbadguy.rect.copy().move(-self.offset.x, -self.offset.y)
+            
+            pyg.draw.rect(screen, RED, Enemy_Rect, width=2)
+
 
         for sprite in all_sprites_group:
             offset_pos = sprite.rect.topleft - self.offset
@@ -514,7 +549,7 @@ def main():
     #TODO MAIN STATMENT
     #Set Player sprite
     camera = Camera()
-    debug = False
+    
    
     while True:
         ui.update_time(pyg.time.get_ticks())
@@ -543,9 +578,7 @@ def main():
         
 
         #Debug Hitrects
-        if debug == True:
-            pyg.draw.rect(screen, "red", player.hitbox_rect, width=2)
-            pyg.draw.rect(screen, "yellow", player.rect, width=2)
+        
 
         #Update Display
         pyg.display.update()
