@@ -397,7 +397,7 @@ class Enemy(pyg.sprite.Sprite):
     def player_collision(self):
         
         if self.isDead == False:
-            if pyg.Rect.colliderect(self.rect, player.rect):
+            if pyg.Rect.colliderect(self.hitbox_rect, player.hitbox_rect):
                 self.kill()
                 player.get_dmg(self.dmg)
                 self.isDead = True
