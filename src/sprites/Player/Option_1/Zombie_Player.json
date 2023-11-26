@@ -1,0 +1,315 @@
+{
+	"frames": {
+		"Zombie_Idle-0.png": {
+			"frame": {
+				"x": 1,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Idle-1.png": {
+			"frame": {
+				"x": 29,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Idle-2.png": {
+			"frame": {
+				"x": 57,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Idle-3.png": {
+			"frame": {
+				"x": 85,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Idle-4.png": {
+			"frame": {
+				"x": 113,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Idle-5.png": {
+			"frame": {
+				"x": 141,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Idle-6.png": {
+			"frame": {
+				"x": 169,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Walk-0.png": {
+			"frame": {
+				"x": 197,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Walk-1.png": {
+			"frame": {
+				"x": 225,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Walk-2.png": {
+			"frame": {
+				"x": 253,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Walk-3.png": {
+			"frame": {
+				"x": 281,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Walk-4.png": {
+			"frame": {
+				"x": 309,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Walk-5.png": {
+			"frame": {
+				"x": 337,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Walk-6.png": {
+			"frame": {
+				"x": 365,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		},
+		"Zombie_Walk-7.png": {
+			"frame": {
+				"x": 393,
+				"y": 1,
+				"w": 26,
+				"h": 26
+			},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {
+				"x": 0,
+				"y": 0,
+				"w": 26,
+				"h": 26
+			},
+			"sourceSize": {
+				"w": 26,
+				"h": 26
+			}
+		}
+	},
+	"meta": {
+		"app": "http://www.codeandweb.com/texturepacker",
+		"version": "1.0",
+		"image": "spritesheet.png",
+		"format": "RGBA8888",
+		"size": {
+			"w": 420,
+			"h": 28
+		},
+		"scale": "1"
+	}
+}
