@@ -24,6 +24,7 @@ ATTACK_OFFSET_Y = -26
 
 #Enemy Settings
 ENEMY_SPEED = 4
+ENEMY_SIZE = 1
 
 
 #Colors
