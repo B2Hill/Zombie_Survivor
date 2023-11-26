@@ -17,12 +17,19 @@ clock = pyg.time.Clock()
 #loads images
 background = pyg.transform.scale(pyg.image.load(rf'src/background/Dirt_Background.jpg').convert(), (WIDTH, HEIGHT)) #use rf'src/{folder_path}...' for local testing
 
+#Font Load
+font = pyg.font.Font("src/font/PublicPixel.ttf",20)
+small_font = pyg.font.Font("src/font/PublicPixel.ttf",15)
+title_font = pyg.font.Font("src/font/PublicPixel.ttf",60)
+score_font = pyg.font.Font("src/font/PublicPixel.ttf",50)
+
 #Group Initialization
 all_sprites_group = pyg.sprite.Group()
 bullet_group = pyg.sprite.Group()
 enemy_group = pyg.sprite.Group()
 
-
+#Timer
+Current_timer = 0
 #Character Class
 class Player(pyg.sprite.Sprite):
     def __init__(self, Sprite_Location=rf'src\sprites\Player\Option_1\Zombie_Player.png', pos = (WIDTH // 2, HEIGHT //2)):
@@ -225,7 +232,9 @@ class Player(pyg.sprite.Sprite):
             all_sprites_group.add(self.bullet)
             #print(spawn_bullet_pos)
 
-
+    def get_damg(self, ammmount):
+        pass
+        #TODO: After UI Class
 
     def movement(self):
         if self.velocity_x or self.velocity_y != 0:
@@ -417,6 +426,65 @@ class Bullet(pyg.sprite.Sprite):
     def update(self):
         self.bullet_movement()
 
+class UI():
+    def __init__(self):
+        self.current_health = 100
+        self.max_health = 100
+        self.bar_lenth = 100
+        self.health_ratio = self.max_health / self.bar_lenth
+        self.current_color = None
+        self.time = 0
+
+    def display_HP_bar(self):
+        pyg.draw.rect(screen, BLACK, (10,15, self.bar_lenth * 3, 20)) #Black
+
+        if self.current_health >= 75:
+            pyg.draw.rect(screen, GREEN, (10,15,self.current_health * 3, 20)) #Green
+            self.current_color = GREEN
+        elif self.current_health >= 25:
+            pyg.draw.rect(screen, YELLOW, (10,15, self.current_health * 3, 20))
+            self.current_color = YELLOW
+        elif self.current_health >= 0:
+            pyg.draw.rect(screen, RED, (10, 15, self.current_health * 3, 20))
+            self.current_color = RED
+        
+        pyg.draw.rect(screen, WHITE, (10,15, self.bar_lenth * 3,  20), 4)
+
+    def display_HP_txt(self):
+        hp_surface = font.render(f"{player.health} / {self.max_health}", False,self.current_color)
+        hp_rect = hp_surface.get_rect(center = (410,25)) ### Set to Adjust with screen Size
+        screen.blit(hp_surface, hp_rect)
+    
+    def display_wave_txt(self):
+        wave_surface = font.render(f"wave: {game_stats['current_wave']}",False, GREEN)
+        wave_rect = wave_surface.get_rect(center = (745,28)) ### Set to Adjust with screen Size
+        screen.blit(wave_surface, wave_rect)
+    ##############################
+    ###Change for Score Display###
+    ##############################
+    #def display_coin(self):
+    #        coin_img = pyg.image.load()
+    #        coin_img = pyg.transform.scale_by(coin_img, 3)
+    #        coin_img_rect = coin_img.get_rect(center = (1162 , 30))### Set to Adjust with screen Size
+    #        coin_txt = font.render(f"x {game_stats['coins']}", True, (255,223,91))
+    #        screen.blit(coin_txt, (1200, 20))
+    #        screen.blit(coin_img, coin_img_rect)
+
+    def display_timer(self):
+        text_1 = font.render(f'{int(self.time / 1000)} Seconds', True, RED)
+        screen.blit(text_1, (400, 100))
+        
+    
+    def update_time(self, time):
+        self.time = time
+
+    def update(self):
+        self.display_HP_bar()
+        self.display_HP_txt()
+        self.display_timer()
+        self.display_wave_txt()
+    
+
 
 class Camera(pyg.sprite.Group):
     def __init__(self):
@@ -437,10 +505,10 @@ class Camera(pyg.sprite.Group):
             screen.blit(sprite.image, offset_pos)
             #print(f"DRAWING || {sprite}")
 
-#Player Initilization
+
 player = Player()
 Testbadguy = Enemy(MinDist= 300)
-
+ui = UI()
 
 def main():
     #TODO MAIN STATMENT
@@ -449,6 +517,7 @@ def main():
     debug = False
    
     while True:
+        ui.update_time(pyg.time.get_ticks())
         keys = pyg.key.get_pressed()
         for event in pyg.event.get():
             if event.type == pyg.QUIT:
@@ -469,7 +538,8 @@ def main():
         screen.fill('black')
         camera.C_draw()
         all_sprites_group.update()
-
+        ui.update()
+        
         
 
         #Debug Hitrects
