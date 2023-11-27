@@ -231,7 +231,7 @@ class Player(pyg.sprite.Sprite):
         if ui.current_health > 0:
             ui.current_health -= ammmount
             self.health= ui.current_health
-            if ui.current_health > 0:
+            if ui.current_health < 0:
                 self.health = 0
     
     def check_collision(self, direction):
@@ -580,7 +580,6 @@ class Gamelevel(pyg.sprite.Group):
             x = r * math.cos(rand_angle) + self.circle_center[0]
             y = r * math.sin(rand_angle) + self.circle_center[1]
             Enemy(name = random.choice(enemy_name), position= (x,y))
-            print(f"spwan location: {x, y}")
             self.num_of_enemies_spawned += 1
 
     def C_draw(self):
