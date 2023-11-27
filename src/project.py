@@ -15,7 +15,7 @@ pyg.display.set_caption("Zombie Survior")
 clock = pyg.time.Clock()
 
 #loads images
-background = pyg.transform.scale(pyg.image.load(rf'src/background/Dirt_Background.jpg').convert(), (WIDTH, HEIGHT)) #use rf'src/{folder_path}...' for local testing
+#background = pyg.transform.scale(pyg.image.load(rf'src/background/Dirt_Background.jpg').convert(), (WIDTH, HEIGHT)) #use rf'src/{folder_path}...' for local testing
 
 #Font Load
 font = pyg.font.Font("src/font/PublicPixel.ttf",20)
@@ -551,7 +551,8 @@ class tile(pyg.sprite.Sprite):
         self.tile_pos = pos
         self.distance_from_player = 0
 
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect(center = pos)
+        print(self.rect)
 
     def get_vector_distance(self, Vect_1, Vect_2):
         if int(Vect_1[0] - Vect_2[0]) < 0:
@@ -561,32 +562,42 @@ class tile(pyg.sprite.Sprite):
         return (Vect_1 - Vect_2).magnitude()
     
     def destroy_tiles(self):
-        if self.distance_from_player > HEIGHT * WIDTH:
+        if self.distance_from_player > 894*RENDER_DISTANCE:
             self.kill()
+            print("TILE destroyed!")
         pass
 
     def update_distance(self):
         player_vector = pyg.math.Vector2(player.rect.center)
         Tile_vector = pyg.math.Vector2(self.rect.center)
         self.distance_from_player = self.get_vector_distance(player_vector, Tile_vector)
+        self.destroy_tiles()
+        #print(self.distance_from_player)
          
 
     def update(self):
-        self.destroy_tiles()
+        self.update_distance()
+        
 
 class Gamelevel(pyg.sprite.Group):
     def __init__(self):
         super().__init__()
         self.offset = pyg.math.Vector2(0,0)
-        self.floor_rect = background.get_rect(topleft = (0,0))
+        #self.floor_rect = background.get_rect(topleft = (0,0))
 
         self.circle_center = player.hitbox_rect.center
-        self.enemy_spawn_radius_min = 600
-        self.enemy_spawn_radius_max = 1200
+        self.enemy_spawn_radius_min = SPAWN_MIN
+        self.enemy_spawn_radius_max = SPAWN_MAX
         self.num_of_enemies_spawned = 0
         
-        self.number_of_tiles_max = 9
-        self.number_of_tiles = 0
+        
+        self.max_X_Tiles = 4
+        self.max_Y_tiles = 4
+        self.number_of_tiles_max = self.max_X_Tiles * self.max_Y_tiles
+        self.number_of_X_tiles = 0
+        self.number_of_Y_tiles = 0
+        self.next_tile_x = -(WIDTH // 894 * 2.5)
+        self.next_tile_y = (HEIGHT // 894 * 2.5)
         
         
         
@@ -599,13 +610,22 @@ class Gamelevel(pyg.sprite.Group):
     def create_map(self):
         #self.spawn_hp_pots()
         self.spawn_enemies()
-        self.create_tiles()
+        self.create_tiles_INIT()
         pass
     
-    def create_tiles(self):
-        while self.number_of_tiles < self.number_of_tiles_max:
-            ground_tile = tile(pos = (WIDTH*self.number_of_tiles))
-            self.number_of_tiles += 1
+    def create_tiles_INIT(self):
+        while self.number_of_Y_tiles < self.max_Y_tiles:
+            if self.number_of_X_tiles < self.max_X_Tiles:
+                tile(pos = (self.next_tile_x, self.next_tile_y))
+                self.number_of_X_tiles += 1
+                self.next_tile_x +=894
+            else:
+                self.number_of_X_tiles = 0
+                self.number_of_Y_tiles += 1
+                self.next_tile_x = -(WIDTH // 894 * 2.5)
+                self.next_tile_y += 894
+                print("NEWLINE")
+            print(f"Current Tile: X:{self.number_of_X_tiles},Y:{self.number_of_Y_tiles} Max Tiles: {self.number_of_tiles_max}\n Next Tile Location: {self.next_tile_x}, {self.next_tile_y}")
 
     def spawn_enemies(self):
         
@@ -626,9 +646,9 @@ class Gamelevel(pyg.sprite.Group):
         self.offset.y = player.hitbox_rect.centery - HEIGHT // 2
 
         #Floor Draw
-        self.floor_rect = background.get_rect(topleft = (0,0))
-        floor_offset_pos = self.floor_rect.topleft - self.offset
-        screen.blit(background, floor_offset_pos)
+        #self.floor_rect = background.get_rect(topleft = (0,0))
+        #floor_offset_pos = self.floor_rect.topleft - self.offset
+        #screen.blit(background, floor_offset_pos)
         
         for sprite in background_group:
             offset_pos = sprite.rect.topleft - self.offset
@@ -649,6 +669,9 @@ class Gamelevel(pyg.sprite.Group):
             for sprite in bullet_group:
                 bullet_rect = sprite.rect.copy().move(-self.offset.x, -self.offset.y)
                 pyg.draw.rect(screen, WHITE, bullet_rect, width=1)
+            for Bg in background_group:
+                background_rect = Bg.rect.copy().move(-self.offset.x, -self.offset.y)
+                pyg.draw.rect(screen, GREEN, background_rect, width=2)
 
 
 player = Player()
@@ -678,6 +701,7 @@ def main():
         #Set Game Background Image
         screen.fill('black')
         game_level.C_draw()
+        background_group.update()
         all_sprites_group.update()
         ui.update()
         game_level.spawn_enemies()

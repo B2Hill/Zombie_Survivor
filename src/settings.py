@@ -5,6 +5,7 @@ WIDTH = 1920
 HEIGHT = 1080
 DEBUG = True
 FPS = 60
+RENDER_DISTANCE = 10
 
 #Player Settings
 PLAYER_START_X = WIDTH // 2
@@ -25,6 +26,9 @@ ATTACK_OFFSET_Y = -26
 #Enemy Settings
 ENEMY_SPEED = 4
 ENEMY_SIZE = 1
+#Spawn AREA
+SPAWN_MIN = 800
+SPAWN_MAX = 2000
 
 
 #Colors
