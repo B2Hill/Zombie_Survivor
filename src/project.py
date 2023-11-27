@@ -24,6 +24,7 @@ title_font = pyg.font.Font("src/font/PublicPixel.ttf",60)
 score_font = pyg.font.Font("src/font/PublicPixel.ttf",50)
 
 #Group Initialization
+background_group = pyg.sprite.Group()
 all_sprites_group = pyg.sprite.Group()
 bullet_group = pyg.sprite.Group()
 enemy_group = pyg.sprite.Group()
@@ -542,7 +543,36 @@ class UI():
         self.display_timer()
         self.display_wave_txt()
     
+class tile(pyg.sprite.Sprite):
+    def __init__(self, size = (WIDTH, HEIGHT), IMG = 'src/background/Dirt_Background.jpg', pos = (0,0)):
+        super().__init__(background_group)
+        self.tile_size = size
+        self.image = pyg.image.load(rf'{IMG}').convert()
+        self.tile_pos = pos
+        self.distance_from_player = 0
 
+        self.rect = self.image.get_rect()
+
+    def get_vector_distance(self, Vect_1, Vect_2):
+        if int(Vect_1[0] - Vect_2[0]) < 0:
+            self.flipped = True
+        else: 
+            self.flipped = False
+        return (Vect_1 - Vect_2).magnitude()
+    
+    def destroy_tiles(self):
+        if self.distance_from_player > HEIGHT * WIDTH:
+            self.kill()
+        pass
+
+    def update_distance(self):
+        player_vector = pyg.math.Vector2(player.rect.center)
+        Tile_vector = pyg.math.Vector2(self.rect.center)
+        self.distance_from_player = self.get_vector_distance(player_vector, Tile_vector)
+         
+
+    def update(self):
+        self.destroy_tiles()
 
 class Gamelevel(pyg.sprite.Group):
     def __init__(self):
@@ -555,6 +585,9 @@ class Gamelevel(pyg.sprite.Group):
         self.enemy_spawn_radius_max = 1200
         self.num_of_enemies_spawned = 0
         
+        self.number_of_tiles_max = 9
+        self.number_of_tiles = 0
+        
         
         
 
@@ -566,7 +599,13 @@ class Gamelevel(pyg.sprite.Group):
     def create_map(self):
         #self.spawn_hp_pots()
         self.spawn_enemies()
+        self.create_tiles()
         pass
+    
+    def create_tiles(self):
+        while self.number_of_tiles < self.number_of_tiles_max:
+            ground_tile = tile(pos = (WIDTH*self.number_of_tiles))
+            self.number_of_tiles += 1
 
     def spawn_enemies(self):
         
@@ -590,9 +629,18 @@ class Gamelevel(pyg.sprite.Group):
         self.floor_rect = background.get_rect(topleft = (0,0))
         floor_offset_pos = self.floor_rect.topleft - self.offset
         screen.blit(background, floor_offset_pos)
+        
+        for sprite in background_group:
+            offset_pos = sprite.rect.topleft - self.offset
+            screen.blit(sprite.image, offset_pos)
+        for sprite in all_sprites_group:
+            offset_pos = sprite.rect.topleft - self.offset
+            screen.blit(sprite.image, offset_pos)
+            #print(f"DRAWING || {sprite}")
+
         if DEBUG == True:
-            pyg.draw.circle(screen, GREEN, player.hitbox_rect.center, 300, width=1)
-            pyg.draw.circle(screen, GREEN, player.hitbox_rect.center, 900, width=1)
+            #pyg.draw.circle(screen, GREEN, player.hitbox_rect.center, 300, width=1)
+            #pyg.draw.circle(screen, GREEN, player.hitbox_rect.center, 900, width=1)
             Player_Rect = player.hitbox_rect.copy().move(-self.offset.x, -self.offset.y)
             pyg.draw.rect(screen, RED, Player_Rect, width=2)
             for badguy in enemy_group:
@@ -601,11 +649,6 @@ class Gamelevel(pyg.sprite.Group):
             for sprite in bullet_group:
                 bullet_rect = sprite.rect.copy().move(-self.offset.x, -self.offset.y)
                 pyg.draw.rect(screen, WHITE, bullet_rect, width=1)
-
-        for sprite in all_sprites_group:
-            offset_pos = sprite.rect.topleft - self.offset
-            screen.blit(sprite.image, offset_pos)
-            #print(f"DRAWING || {sprite}")
 
 
 player = Player()
