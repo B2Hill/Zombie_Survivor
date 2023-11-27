@@ -277,7 +277,7 @@ class Player(pyg.sprite.Sprite):
 #Enemy Class
 class Enemy(pyg.sprite.Sprite):
 
-    def __init__(self,position=(500,500),Sprite_Location=rf'src\sprites\Player\Option_1\Zombie_Player.png', MinDist = 0):
+    def __init__(self,name = "civ", position=(500,500),Sprite_Location=rf'src\sprites\Player\Option_1\Zombie_Player.png', MinDist = 0):
         super().__init__(enemy_group, all_sprites_group)
         self.zombiesheet = Spritesheet(Sprite_Location)
 
@@ -406,9 +406,10 @@ class Enemy(pyg.sprite.Sprite):
         
         if self.isDead == False:
             if pyg.Rect.colliderect(self.hitbox_rect, player.hitbox_rect):
-                self.kill()
                 player.get_dmg(self.dmg)
                 self.isDead = True
+
+
                 
 
     def update(self):
@@ -427,6 +428,7 @@ class Enemy(pyg.sprite.Sprite):
                 self.idletick = 0
                 enemy_group.remove(self)
                 self.deathtrigger = True
+                game_level.num_of_enemies_spawned -=1
             if self.idletick < 500:
                 self.idletick += 1
             else:
@@ -547,21 +549,38 @@ class Gamelevel(pyg.sprite.Group):
         super().__init__()
         self.offset = pyg.math.Vector2(0,0)
         self.floor_rect = background.get_rect(topleft = (0,0))
+
+        self.circle_center = player.hitbox_rect.center
+        self.enemy_spawn_radius_min = 600
+        self.enemy_spawn_radius_max = 1200
+        self.num_of_enemies_spawned = 0
+        
+        
+        
+
         self.enemy_spawn_pos = []
         self.health_spawn_pos = []
         self.create_map()
         self.spawn_timer = 0
 
     def create_map(self):
-        self.spawn_hp_pots()
-    
+        #self.spawn_hp_pots()
+        self.spawn_enemies()
+        pass
+
     def spawn_enemies(self):
+        
         self.number_of_enemies = game_stats["number_of_enemies"][game_stats["current_wave"]-1]
         enemy_name = ["Civ", "Soldier"]
-        num_of_enemies_spawned = 0
-        while num_of_enemies_spawned < self.number_of_enemies:
-            Enemy(random.choice(enemy_name), random.choice(self.enemy_spawn_pos))
-            num_of_enemies_spawned += 1
+        
+        while self.num_of_enemies_spawned < self.number_of_enemies:
+            rand_angle = 2 * math.pi * random.random()
+            r= self.enemy_spawn_radius_min * math.sqrt(random.random())
+            x = r * math.cos(rand_angle) + self.circle_center[0]
+            y = r * math.sin(rand_angle) + self.circle_center[1]
+            Enemy(name = random.choice(enemy_name), position= (x,y))
+            print(f"spwan location: {x, y}")
+            self.num_of_enemies_spawned += 1
 
     def C_draw(self):
         self.offset.x = player.hitbox_rect.centerx - WIDTH // 2
@@ -572,10 +591,13 @@ class Gamelevel(pyg.sprite.Group):
         floor_offset_pos = self.floor_rect.topleft - self.offset
         screen.blit(background, floor_offset_pos)
         if DEBUG == True:
+            pyg.draw.circle(screen, GREEN, player.hitbox_rect.center, 300, width=1)
+            pyg.draw.circle(screen, GREEN, player.hitbox_rect.center, 900, width=1)
             Player_Rect = player.hitbox_rect.copy().move(-self.offset.x, -self.offset.y)
             pyg.draw.rect(screen, RED, Player_Rect, width=2)
-            Enemy_Rect = Testbadguy.rect.copy().move(-self.offset.x, -self.offset.y)
-            pyg.draw.rect(screen, RED, Enemy_Rect, width=2)
+            for badguy in enemy_group:
+                Enemy_Rect = badguy.rect.copy().move(-self.offset.x, -self.offset.y)
+                pyg.draw.rect(screen, RED, Enemy_Rect, width=2)
             for sprite in bullet_group:
                 bullet_rect = sprite.rect.copy().move(-self.offset.x, -self.offset.y)
                 pyg.draw.rect(screen, WHITE, bullet_rect, width=1)
@@ -589,11 +611,12 @@ class Gamelevel(pyg.sprite.Group):
 player = Player()
 Testbadguy = Enemy(MinDist= 200, position=(600,600))
 ui = UI()
+game_level = Gamelevel()
 
 def main():
     #TODO MAIN STATMENT
     #Set Player sprite
-    game_level = Gamelevel()
+    
     
    
     while True:
@@ -614,6 +637,7 @@ def main():
         game_level.C_draw()
         all_sprites_group.update()
         ui.update()
+        game_level.spawn_enemies()
         
         
 

@@ -1,9 +1,9 @@
-
+import pygame
 
 # Game Setup
 WIDTH = 1920
 HEIGHT = 1080
-DEBUG = False
+DEBUG = True
 FPS = 60
 
 #Player Settings
@@ -40,7 +40,7 @@ enemy_data = {
         {"health": 100, 
          "attack_damage": 10, 
          "hunting_speed": [4,4,7,7,7], 
-         "image": pygame.image.load("necromancer/roam/0.png"), 
+         #"image": pygame.image.load("necromancer/roam/0.png"), 
          "image_scale": 1.5, 
          "hitbox_rect": pygame.Rect(0,0,75,100), 
          "animation_speed": 0.2, 
@@ -52,9 +52,11 @@ enemy_data = {
         {"health": 100, 
          "attack_damage": 20,
          "hunting_speed": [4,4,6,6,6], 
-         "image": pygame.image.load("nightborne/hunt/1.png"), 
-         "image_scale": 1.9, "hitbox_rect": pygame.Rect(0,0,75,90), 
-         "animation_speed": 0.1, "roam_animation_speed": 0.12, 
+         #"image": pygame.image.load("nightborne/hunt/1.png"), 
+         "image_scale": 1.9, 
+         "hitbox_rect": pygame.Rect(0,0,75,90), 
+         "animation_speed": 0.1, 
+         "roam_animation_speed": 0.12, 
          "death_animation_speed": 0.2, 
          "notice_radius": 400},
 }
