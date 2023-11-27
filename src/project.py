@@ -10,7 +10,7 @@ from spritesheet import *
 
 pyg.init()
 #Create window
-screen = pyg.display.set_mode((WIDTH, HEIGHT))
+screen = pyg.display.set_mode((WIDTH, HEIGHT), flags= pygame.RESIZABLE | pygame.SCALED)
 pyg.display.set_caption("Zombie Survior")
 clock = pyg.time.Clock()
 
@@ -494,6 +494,8 @@ class UI():
         self.current_color = None
         self.time = 0
 
+
+
     def display_HP_bar(self):
         pyg.draw.rect(screen, BLACK, (10,15, self.bar_lenth * 3, 20)) #Black
 
@@ -542,6 +544,7 @@ class UI():
         self.display_HP_txt()
         self.display_timer()
         self.display_wave_txt()
+        
     
 class tile(pyg.sprite.Sprite):
     def __init__(self, size = (T_WIDTH, T_HEIGHT), IMG = 'src/background/Dirt_Background.jpg', pos = (0,0)):
@@ -579,8 +582,9 @@ class tile(pyg.sprite.Sprite):
         #print(self.distance_from_player)
 
     def move_tile(self):
+##NOT WORKING##
         if self.isDead:
-            if self.distance_from_player > self.tile_size[0]*3:
+            if self.distance_from_player > self.tile_size[0]*5:
                 if player.velocity_x > 0:
                     TMP_Tuple = list(self.tile_pos)
                     if TMP_Tuple[0] < 0:
@@ -638,15 +642,16 @@ class Gamelevel(pyg.sprite.Group):
         self.number_of_Y_tiles = 0
         self.next_tile_x = 0#-(WIDTH // 894 * 2.5)
         self.next_tile_y = 0#(HEIGHT // 894 * 2.5)
-
-         #self.render_rect = pyg.draw.rect(screen, color = (0,0,0,0), width = 1, rect = (0,0,WIDTH,HEIGHT))
-        
         
 
         self.enemy_spawn_pos = []
         self.health_spawn_pos = []
         self.create_map()
         self.spawn_timer = 0
+
+    def move_tiles(self):
+        for items in background_group:
+            pass
 
     def create_map(self):
         #self.spawn_hp_pots()
