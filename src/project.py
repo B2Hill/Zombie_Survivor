@@ -544,14 +544,16 @@ class UI():
         self.display_wave_txt()
     
 class tile(pyg.sprite.Sprite):
-    def __init__(self, size = (WIDTH, HEIGHT), IMG = 'src/background/Dirt_Background.jpg', pos = (0,0)):
+    def __init__(self, size = (T_WIDTH, T_HEIGHT), IMG = 'src/background/Dirt_Background.jpg', pos = (0,0)):
         super().__init__(background_group)
         self.tile_size = size
         self.image = pyg.image.load(rf'{IMG}').convert()
         self.tile_pos = pos
         self.distance_from_player = 0
+        self.isDead = False
+        self.genNewTile = False
 
-        self.rect = self.image.get_rect(center = pos)
+        self.rect = self.image.get_rect(center = self.tile_pos)
         print(self.rect)
 
     def get_vector_distance(self, Vect_1, Vect_2):
@@ -561,11 +563,13 @@ class tile(pyg.sprite.Sprite):
             self.flipped = False
         return (Vect_1 - Vect_2).magnitude()
     
+    def update_tile_pos(self, pos):
+        self.rect.centerx =  pos[0]
+
     def destroy_tiles(self):
-        if self.distance_from_player > 894*RENDER_DISTANCE:
-            self.kill()
-            print("TILE destroyed!")
-        pass
+        if self.distance_from_player > self.tile_size[0]*1:
+            self.isDead = True
+            #print(f"TILE destroyed! TILE POS{self.tile_pos}")
 
     def update_distance(self):
         player_vector = pyg.math.Vector2(player.rect.center)
@@ -573,10 +577,46 @@ class tile(pyg.sprite.Sprite):
         self.distance_from_player = self.get_vector_distance(player_vector, Tile_vector)
         self.destroy_tiles()
         #print(self.distance_from_player)
-         
+
+    def move_tile(self):
+        if self.isDead:
+            if self.distance_from_player > self.tile_size[0]*3:
+                if player.velocity_x > 0:
+                    TMP_Tuple = list(self.tile_pos)
+                    if TMP_Tuple[0] < 0:
+                        TMP_Tuple[0] = -self.tile_pos[0] + 894 * game_level.max_X_Tiles
+                    elif TMP_Tuple[0] >= 0:
+                        TMP_Tuple[0] = self.tile_pos[0] + 894 * game_level.max_X_Tiles
+                    self.tile_pos = TMP_Tuple
+                    self.update_tile_pos(self.tile_pos)
+                    print(self.tile_pos)
+                elif player.velocity_x < 0:
+                    pass
+                elif player.velocity_y > 0:
+                    pass
+                elif player.velocity_y < 0:
+                    pass
+                else:
+                    pass
+                self.isDead = False
 
     def update(self):
         self.update_distance()
+        self.move_tile()
+    
+    #def MakeNewTile(self):
+    #    if self.isDead and self.genNewTile == False:
+    #        if player.velocity_x >= 0:
+    #            tile(pos = (self.tile_pos[0] + (RENDER_DISTANCE * T_WIDTH), self.tile_pos[1]))
+    #        elif player.velocity_x < 0:
+    #            tile(pos = (self.tile_pos[0] - (RENDER_DISTANCE * T_WIDTH), self.tile_pos[1]))
+    #        elif player.velocity_y >= 0:
+    #            tile(pos = (self.tile_pos[0], self.tile_pos[1] + (RENDER_DISTANCE * T_HEIGHT)))
+    #        elif player.velocity_y < 0:
+    #            tile(pos = (self.tile_pos[0], self.tile_pos[1] - (RENDER_DISTANCE * T_HEIGHT)))
+    #        else:
+    #            pass
+    #        self.genNewTile = True
         
 
 class Gamelevel(pyg.sprite.Group):
@@ -596,9 +636,10 @@ class Gamelevel(pyg.sprite.Group):
         self.number_of_tiles_max = self.max_X_Tiles * self.max_Y_tiles
         self.number_of_X_tiles = 0
         self.number_of_Y_tiles = 0
-        self.next_tile_x = -(WIDTH // 894 * 2.5)
-        self.next_tile_y = (HEIGHT // 894 * 2.5)
-        
+        self.next_tile_x = 0#-(WIDTH // 894 * 2.5)
+        self.next_tile_y = 0#(HEIGHT // 894 * 2.5)
+
+         #self.render_rect = pyg.draw.rect(screen, color = (0,0,0,0), width = 1, rect = (0,0,WIDTH,HEIGHT))
         
         
 
