@@ -515,22 +515,22 @@ class UI():
             pyg.draw.rect(screen, GREEN, (10,15,self.current_health * 3, 20)) #Green
             self.current_color = GREEN
         elif self.current_health >= 25:
-            pyg.draw.rect(screen, YELLOW, (10,15, self.current_health * 3, 20))
+            pyg.draw.rect(screen, YELLOW, (10,15, self.current_health * 3, 20))#YELLOW
             self.current_color = YELLOW
         elif self.current_health >= 0:
-            pyg.draw.rect(screen, RED, (10, 15, self.current_health * 3, 20))
+            pyg.draw.rect(screen, RED, (10, 15, self.current_health * 3, 20))#RED
             self.current_color = RED
         
         pyg.draw.rect(screen, WHITE, (10,15, self.bar_lenth * 3,  20), 4)
 
     def display_HP_txt(self):
         hp_surface = font.render(f"{player.health} / {self.max_health}", False,self.current_color)
-        hp_rect = hp_surface.get_rect(center = (410,25)) ### Set to Adjust with screen Size
+        hp_rect = hp_surface.get_rect(center = (410,25))
         screen.blit(hp_surface, hp_rect)
 
     def display_XP_txt(self):
         XP_surface = font.render(f"{player.xp} XP", False, GREEN)
-        XP_rect = XP_surface.get_rect(center = (600,200)) ### Set to Adjust with screen Size
+        XP_rect = XP_surface.get_rect(center = (1162 , 30))
         screen.blit(XP_surface, XP_rect)
     
     def display_wave_txt(self):
@@ -550,7 +550,7 @@ class UI():
 
     def display_timer(self):
         text_1 = font.render(f'{int(self.time / 1000)} Seconds', True, RED)
-        screen.blit(text_1, (400, 100))
+        screen.blit(text_1, (10, 50))
         
     
     def update_time(self, time):
@@ -591,8 +591,7 @@ class tile(pyg.sprite.Sprite):
             var = (Vect_1 - Vect_2).magnitude()
             #print(var)
             return var
-        
-        
+              
     def update_tile_pos(self, pos):
         self.rect.centerx =  pos[0]
         self.rect.centery = pos[1]
@@ -635,27 +634,10 @@ class tile(pyg.sprite.Sprite):
             self.update_tile_pos(self.tile_pos)
             self.isDead = False
 
-            
-
-
     def update(self):
         self.is_moving()
         self.update_distance()
         self.move_tile()
-    
-    #def MakeNewTile(self):
-    #    if self.isDead and self.genNewTile == False:
-    #        if player.velocity_x >= 0:
-    #            tile(pos = (self.tile_pos[0] + (RENDER_DISTANCE * T_WIDTH), self.tile_pos[1]))
-    #        elif player.velocity_x < 0:
-    #            tile(pos = (self.tile_pos[0] - (RENDER_DISTANCE * T_WIDTH), self.tile_pos[1]))
-    #        elif player.velocity_y >= 0:
-    #            tile(pos = (self.tile_pos[0], self.tile_pos[1] + (RENDER_DISTANCE * T_HEIGHT)))
-    #        elif player.velocity_y < 0:
-    #            tile(pos = (self.tile_pos[0], self.tile_pos[1] - (RENDER_DISTANCE * T_HEIGHT)))
-    #        else:
-    #            pass
-    #        self.genNewTile = True
         
 
 class Gamelevel(pyg.sprite.Group):
@@ -726,10 +708,6 @@ class Gamelevel(pyg.sprite.Group):
         self.offset.x = player.hitbox_rect.centerx - WIDTH // 2
         self.offset.y = player.hitbox_rect.centery - HEIGHT // 2
 
-        #Floor Draw
-        #self.floor_rect = background.get_rect(topleft = (0,0))
-        #floor_offset_pos = self.floor_rect.topleft - self.offset
-        #screen.blit(background, floor_offset_pos)
         
         for sprite in background_group:
             offset_pos = sprite.rect.topleft - self.offset
@@ -737,11 +715,10 @@ class Gamelevel(pyg.sprite.Group):
         for sprite in all_sprites_group:
             offset_pos = sprite.rect.topleft - self.offset
             screen.blit(sprite.image, offset_pos)
-            #print(f"DRAWING || {sprite}")
+
 
         if DEBUG == True:
-            #pyg.draw.circle(screen, GREEN, player.hitbox_rect.center, 300, width=1)
-            #pyg.draw.circle(screen, GREEN, player.hitbox_rect.center, 900, width=1)
+
             Player_Rect = player.hitbox_rect.copy().move(-self.offset.x, -self.offset.y)
             pyg.draw.rect(screen, RED, Player_Rect, width=2)
             for badguy in enemy_group:
