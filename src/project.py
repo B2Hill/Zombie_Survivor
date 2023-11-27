@@ -315,6 +315,8 @@ class Enemy(pyg.sprite.Sprite):
         self.movement_speed = ENEMY_SPEED
         self.position = pygame.math.Vector2(position)
         self.dmg = 10
+        self.xp = 10
+        self.xp_given = False
 
         #Enemy Movement
         self.direction = pyg.math.Vector2()
@@ -337,8 +339,11 @@ class Enemy(pyg.sprite.Sprite):
             self.direction = (player_vector - enemy_vector).normalize()
         else:
             self.direction = pyg.math.Vector2(0,0)
+            self.xp = 0
         if (distance > self.max_distance):
             self.isDead = True
+            self.xp = 0
+            
 
         
         self.velocity = self.direction * self.movement_speed
@@ -417,9 +422,6 @@ class Enemy(pyg.sprite.Sprite):
                 player.get_dmg(self.dmg)
                 self.isDead = True
 
-
-                
-
     def update(self):
         self.check_alive()
         if self.isDead == False:
@@ -432,6 +434,9 @@ class Enemy(pyg.sprite.Sprite):
         else: 
             #random Chance to drop power up give player XP
             #play death animation
+            if self.xp_given == False:
+                player.xp += self.xp
+                self.xp_given = True
             if self.deathtrigger == False:
                 self.idletick = 0
                 enemy_group.remove(self)
@@ -522,6 +527,11 @@ class UI():
         hp_surface = font.render(f"{player.health} / {self.max_health}", False,self.current_color)
         hp_rect = hp_surface.get_rect(center = (410,25)) ### Set to Adjust with screen Size
         screen.blit(hp_surface, hp_rect)
+
+    def display_XP_txt(self):
+        XP_surface = font.render(f"{player.xp} XP", False, GREEN)
+        XP_rect = XP_surface.get_rect(center = (600,200)) ### Set to Adjust with screen Size
+        screen.blit(XP_surface, XP_rect)
     
     def display_wave_txt(self):
         wave_surface = font.render(f"wave: {game_stats['current_wave']}",False, GREEN)
@@ -551,6 +561,8 @@ class UI():
         self.display_HP_txt()
         self.display_timer()
         self.display_wave_txt()
+        self.display_XP_txt()
+        
         
     
 class tile(pyg.sprite.Sprite):
