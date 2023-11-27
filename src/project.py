@@ -409,6 +409,7 @@ class Enemy(pyg.sprite.Sprite):
                 self.kill()
                 player.get_dmg(self.dmg)
                 self.isDead = True
+                
 
     def update(self):
         self.check_alive()
@@ -424,6 +425,7 @@ class Enemy(pyg.sprite.Sprite):
             #play death animation
             if self.deathtrigger == False:
                 self.idletick = 0
+                enemy_group.remove(self)
                 self.deathtrigger = True
             if self.idletick < 500:
                 self.idletick += 1
@@ -468,7 +470,9 @@ class Bullet(pyg.sprite.Sprite):
         hits = pyg.sprite.groupcollide(enemy_group, bullet_group, False, True, hitbox_collide)
 
         for hit in hits:
-            hit.health -= 10
+            if hit.isDead == False:
+                hit.health -= 10
+                
 
             
         if pyg.sprite.spritecollide(self, obstacles_group, False): #Wall Collisions
@@ -538,7 +542,7 @@ class UI():
     
 
 
-class Camera(pyg.sprite.Group):
+class Gamelevel(pyg.sprite.Group):
     def __init__(self):
         super().__init__()
         self.offset = pyg.math.Vector2(0,0)
@@ -573,7 +577,7 @@ ui = UI()
 def main():
     #TODO MAIN STATMENT
     #Set Player sprite
-    camera = Camera()
+    game_level = Gamelevel()
     
    
     while True:
@@ -591,7 +595,7 @@ def main():
 
         #Set Game Background Image
         screen.fill('black')
-        camera.C_draw()
+        game_level.C_draw()
         all_sprites_group.update()
         ui.update()
         
