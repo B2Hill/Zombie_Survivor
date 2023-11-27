@@ -87,7 +87,9 @@ class Player(pyg.sprite.Sprite):
         self.attack_cooldown = 0
         self.attack_offset = pyg.math.Vector2(ATTACK_OFFSET_X, ATTACK_OFFSET_Y)
         
-        
+        #MOVE Variables
+        self.velocity_x = 0
+        self.velocity_y = 0
         #Hitbox Variables
         self.pos = pos
         self.vec_pos = pygame.math.Vector2(pos)
@@ -554,7 +556,8 @@ class tile(pyg.sprite.Sprite):
         self.tile_pos = pos
         self.distance_from_player = 0
         self.isDead = False
-        self.genNewTile = False
+        self.ismoving = False
+        self.movecheck = False
 
         self.rect = self.image.get_rect(center = self.tile_pos)
         print(self.rect)
@@ -562,49 +565,65 @@ class tile(pyg.sprite.Sprite):
     def get_vector_distance(self, Vect_1, Vect_2):
         if int(Vect_1[0] - Vect_2[0]) < 0:
             self.flipped = True
+            return (Vect_1 - Vect_2).magnitude()
         else: 
             self.flipped = False
-        return (Vect_1 - Vect_2).magnitude()
-    
+            return -1*(Vect_1 - Vect_2).magnitude()
+    def get_distance(self, Vect_1, Vect_2, XYAbs):
+        var = 0.0
+        if XYAbs == 0:
+            var = (Vect_1[0] - Vect_2[0])
+            print(f'player X:{Vect_1[0]} || {var}')
+            return var
+        elif XYAbs == 1:
+            var = (Vect_1[1] - Vect_2[1])
+            #print(var)
+            return var
+        else:
+            var = (Vect_1 - Vect_2).magnitude()
+            #print(var)
+            return var
+        
+        
     def update_tile_pos(self, pos):
         self.rect.centerx =  pos[0]
-
-    def destroy_tiles(self):
-        if self.distance_from_player > self.tile_size[0]*1:
-            self.isDead = True
-            #print(f"TILE destroyed! TILE POS{self.tile_pos}")
+        self.rect.centery = pos[1]
 
     def update_distance(self):
         player_vector = pyg.math.Vector2(player.rect.center)
         Tile_vector = pyg.math.Vector2(self.rect.center)
-        self.distance_from_player = self.get_vector_distance(player_vector, Tile_vector)
-        self.destroy_tiles()
+        self.distance_from_player = self.get_distance(player_vector, Tile_vector, 99)##Absolute Value
+        self.distance_from_playerX = self.get_distance(player_vector, Tile_vector, 0)#X Value
+        self.distance_from_playerY = self.get_distance(player_vector, Tile_vector, 1)#Y Value
         #print(self.distance_from_player)
 
+    def is_moving(self):
+        if player.velocity_x or player.velocity_y != 0:
+            self.ismoving = True
+        else:
+            self.ismoving = False
+
     def move_tile(self):
-##NOT WORKING##
-        if self.isDead:
-            if self.distance_from_player > self.tile_size[0]*5:
-                if player.velocity_x > 0:
-                    TMP_Tuple = list(self.tile_pos)
-                    if TMP_Tuple[0] < 0:
-                        TMP_Tuple[0] = -self.tile_pos[0] + 894 * game_level.max_X_Tiles
-                    elif TMP_Tuple[0] >= 0:
-                        TMP_Tuple[0] = self.tile_pos[0] + 894 * game_level.max_X_Tiles
-                    self.tile_pos = TMP_Tuple
-                    self.update_tile_pos(self.tile_pos)
-                    print(self.tile_pos)
-                elif player.velocity_x < 0:
-                    pass
-                elif player.velocity_y > 0:
-                    pass
-                elif player.velocity_y < 0:
-                    pass
-                else:
-                    pass
-                self.isDead = False
+        if math.fabs(self.distance_from_playerX) > self.tile_size[0]*2:
+            if self.isDead == False:
+                self.isDead = True
+        if self.isDead and self.ismoving == True:
+            if self.distance_from_playerX > 2000 and player.velocity_x > 0:
+                TMP_Tuple = list(self.tile_pos)
+                TMP_Tuple[0] = self.tile_pos[0] + 894 * game_level.max_X_Tiles
+                self.tile_pos = TMP_Tuple
+                self.update_tile_pos(self.tile_pos)
+            elif self.distance_from_playerX < -2000 and player.velocity_x < 0:
+                TMP_Tuple = list(self.tile_pos)
+                TMP_Tuple[0] = self.tile_pos[0] - 894 * game_level.max_X_Tiles
+                self.tile_pos = TMP_Tuple
+                self.update_tile_pos(self.tile_pos)
+
+            
+
 
     def update(self):
+        self.is_moving()
         self.update_distance()
         self.move_tile()
     
@@ -640,8 +659,8 @@ class Gamelevel(pyg.sprite.Group):
         self.number_of_tiles_max = self.max_X_Tiles * self.max_Y_tiles
         self.number_of_X_tiles = 0
         self.number_of_Y_tiles = 0
-        self.next_tile_x = 0#-(WIDTH // 894 * 2.5)
-        self.next_tile_y = 0#(HEIGHT // 894 * 2.5)
+        self.next_tile_x = -T_WIDTH
+        self.next_tile_y = -T_HEIGHT
         
 
         self.enemy_spawn_pos = []
@@ -668,7 +687,7 @@ class Gamelevel(pyg.sprite.Group):
             else:
                 self.number_of_X_tiles = 0
                 self.number_of_Y_tiles += 1
-                self.next_tile_x = -(WIDTH // 894 * 2.5)
+                self.next_tile_x = 0
                 self.next_tile_y += 894
                 print("NEWLINE")
             print(f"Current Tile: X:{self.number_of_X_tiles},Y:{self.number_of_Y_tiles} Max Tiles: {self.number_of_tiles_max}\n Next Tile Location: {self.next_tile_x}, {self.next_tile_y}")
