@@ -3,7 +3,8 @@ import pygame
 # Game Setup
 WIDTH = 1920
 HEIGHT = 1080
-DEBUG = True
+DEBUG = False
+DEBUG_TIMER = 300
 FPS = 60
 RENDER_DISTANCE = 3
 
@@ -25,7 +26,7 @@ ATTACK_OFFSET_Y = -26
 
 #Enemy Settings
 ENEMY_SPEED = 4
-ENEMY_SIZE = 1
+ENEMY_SIZE = 2
 #Spawn AREA
 SPAWN_MIN = 800
 SPAWN_MAX = 2000

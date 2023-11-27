@@ -160,7 +160,7 @@ class Player(pyg.sprite.Sprite):
                 else:
                     exit()
         else:
-            print(f"{self.currentAction} || {self.actions[self.currentActionState]}")
+            #print(f"{self.currentAction} || {self.actions[self.currentActionState]}")
             self.currentFrame = 0
         #SKIP
                 
@@ -404,7 +404,7 @@ class Enemy(pyg.sprite.Sprite):
                 else:
                     exit()
         else:
-            print(f"{self.currentAction} || {self.actions[self.currentActionState]}")
+            #print(f"{self.currentAction} || {self.actions[self.currentActionState]}")
             self.currentFrame = 0
         #SKIP
    
@@ -506,7 +506,26 @@ class UI():
         self.current_color = None
         self.time = 0
 
+        #DEBUG INFO
+        self.debugtimer = DEBUG_TIMER
+        self.debugtimerbool = False
+        self.debugTXT = ""
 
+
+    def Count_debug_timer(self):
+        self.debugtimer -= 1
+        if self.debugtimer == 0:
+            self.stop_debug_timer()
+
+    def stop_debug_timer(self, timer = DEBUG_TIMER):
+        self.debugtimer = timer
+        self.debugtimerbool = False
+
+    def display_Debug_txt(self):
+        
+        debug_txt_surface = font.render(f"{self.debugTXT}", False, RED) #DEBUG TEXT
+        debug_rect = debug_txt_surface.get_rect(center = (player.pos[0],player.pos[1]-100))
+        screen.blit(debug_txt_surface, debug_rect)
 
     def display_HP_bar(self):
         pyg.draw.rect(screen, BLACK, (10,15, self.bar_lenth * 3, 20)) #Black
@@ -562,8 +581,14 @@ class UI():
         self.display_timer()
         self.display_wave_txt()
         self.display_XP_txt()
-        
-        
+        if self.debugtimerbool:
+            self.Count_debug_timer()
+            
+        if self.debugtimer > 0 and self.debugtimerbool:
+            self.display_Debug_txt()
+            print(f'{self.debugtimer} || {self.debugtimerbool}')
+            
+
     
 class tile(pyg.sprite.Sprite):
     def __init__(self, size = (T_WIDTH, T_HEIGHT), IMG = 'src/background/Dirt_Background.jpg', pos = (0,0)):
@@ -577,7 +602,6 @@ class tile(pyg.sprite.Sprite):
         self.movecheck = False
 
         self.rect = self.image.get_rect(center = self.tile_pos)
-        print(self.rect)
 
     def get_distance(self, Vect_1, Vect_2, XYAbs):
         var = 0.0
@@ -687,8 +711,8 @@ class Gamelevel(pyg.sprite.Group):
                 self.number_of_Y_tiles += 1
                 self.next_tile_x = 0
                 self.next_tile_y += 894
-                print("NEWLINE")
-            print(f"Current Tile: X:{self.number_of_X_tiles},Y:{self.number_of_Y_tiles} Max Tiles: {self.number_of_tiles_max}\n Next Tile Location: {self.next_tile_x}, {self.next_tile_y}")
+                #print("NEWLINE")
+            #print(f"Current Tile: X:{self.number_of_X_tiles},Y:{self.number_of_Y_tiles} Max Tiles: {self.number_of_tiles_max}\n Next Tile Location: {self.next_tile_x}, {self.next_tile_y}")
 
     def spawn_enemies(self):
         
@@ -733,7 +757,7 @@ class Gamelevel(pyg.sprite.Group):
 
 
 player = Player()
-Testbadguy = Enemy(MinDist= 200, position=(600,600))
+#Testbadguy = Enemy(MinDist= 200, position=(600,600))
 ui = UI()
 game_level = Gamelevel()
 
@@ -752,7 +776,10 @@ def main():
                 exit()
             if event.type == pyg.KEYDOWN:
                 if event.key == pyg.K_F1:
-                    Testbadguy.isDead = False
+                    print("F1")
+                    ui.debugTXT = f"Spawn Test Bad guy at: {player.pos[0]+600,player.pos[1]+600}"
+                    ui.debugtimerbool = True
+                    Testbadguy = Enemy(MinDist= 200, position=(player.pos[0]+600,player.pos[1]+600))
             if event.type == pyg.KEYUP:
                 pass
 
