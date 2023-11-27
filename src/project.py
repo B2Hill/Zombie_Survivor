@@ -233,6 +233,7 @@ class Player(pyg.sprite.Sprite):
             self.health= ui.current_health
             if ui.current_health > 0:
                 self.health = 0
+    
     def check_collision(self, direction):
         for sprite in obstacles_group:
             if sprite.rect.colliderect(self.hitbox_rect):
@@ -241,6 +242,7 @@ class Player(pyg.sprite.Sprite):
                         self.hitbox_rect.right = sprite.rect.left
                     if self.velocity_x < 0:
                         self.hitbox_rect.left = sprite.rect.right
+    
     def movement(self):
         if self.velocity_x or self.velocity_y != 0:
             self.update_action(1)
@@ -274,6 +276,7 @@ class Player(pyg.sprite.Sprite):
 
 #Enemy Class
 class Enemy(pyg.sprite.Sprite):
+
     def __init__(self,position=(500,500),Sprite_Location=rf'src\sprites\Player\Option_1\Zombie_Player.png', MinDist = 0):
         super().__init__(enemy_group, all_sprites_group)
         self.zombiesheet = Spritesheet(Sprite_Location)
@@ -299,7 +302,7 @@ class Enemy(pyg.sprite.Sprite):
         self.rect = self.hitbox_rect.copy()
         self.flipped = False
         self.isDead = False
-
+        self.deathtrigger = False
         #idle Var
         self.idletick = 0
 
@@ -313,6 +316,11 @@ class Enemy(pyg.sprite.Sprite):
         self.direction = pyg.math.Vector2()
         self.velocity = pyg.math.Vector2()
         self.min_distance = MinDist
+
+    def check_alive(self):
+        if self.health <=0:
+            self.isDead = True
+
 
     def hunt_player(self):
         
@@ -347,11 +355,11 @@ class Enemy(pyg.sprite.Sprite):
             self.currentAction = self.actions[ACTIONSTATE]
 
     def is_idle(self):
-        if self.idletick < 500:
-            self.idletick += 1
-        else:
-            self.update_action(0)
-        #print(self.idletick)
+        if self.isDead == False:
+            if self.idletick < 500:
+                self.idletick += 1
+            else:
+                self.update_action(0)
 
     def update_frame(self):
         if self.currentAction == self.actions[self.currentActionState]:
@@ -402,15 +410,26 @@ class Enemy(pyg.sprite.Sprite):
                 player.get_dmg(self.dmg)
                 self.isDead = True
 
-
     def update(self):
-        if self.get_vector_distance(pyg.math.Vector2(player.hitbox_rect.center), pygame.math.Vector2(self.hitbox_rect.center)) < 100:
-            self.player_collision()
-
-        self.update_frame()
-        self.is_idle()
-        self.hunt_player()
-        self.flip_image()
+        self.check_alive()
+        if self.isDead == False:
+            if self.get_vector_distance(pyg.math.Vector2(player.hitbox_rect.center), pygame.math.Vector2(self.hitbox_rect.center)) < 100:
+                self.player_collision()
+            self.update_frame()
+            self.is_idle()
+            self.hunt_player()
+            self.flip_image()
+        else: 
+            #random Chance to drop power up give player XP
+            #play death animation
+            if self.deathtrigger == False:
+                self.idletick = 0
+                self.deathtrigger = True
+            if self.idletick < 500:
+                self.idletick += 1
+            else:
+                self.kill()
+            
 
 
 
@@ -457,6 +476,7 @@ class Bullet(pyg.sprite.Sprite):
     
     def update(self):
         self.bullet_movement()
+        self.collisions()
 
 class UI():
     def __init__(self):
@@ -536,7 +556,9 @@ class Camera(pyg.sprite.Group):
             pyg.draw.rect(screen, RED, Player_Rect, width=2)
             Enemy_Rect = Testbadguy.rect.copy().move(-self.offset.x, -self.offset.y)
             pyg.draw.rect(screen, RED, Enemy_Rect, width=2)
-
+            for sprite in bullet_group:
+                bullet_rect = sprite.rect.copy().move(-self.offset.x, -self.offset.y)
+                pyg.draw.rect(screen, WHITE, bullet_rect, width=1)
 
         for sprite in all_sprites_group:
             offset_pos = sprite.rect.topleft - self.offset
