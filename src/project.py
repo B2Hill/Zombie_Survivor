@@ -546,6 +546,22 @@ class Gamelevel(pyg.sprite.Group):
     def __init__(self):
         super().__init__()
         self.offset = pyg.math.Vector2(0,0)
+        self.floor_rect = background.get_rect(topleft = (0,0))
+        self.enemy_spawn_pos = []
+        self.health_spawn_pos = []
+        self.create_map()
+        self.spawn_timer = 0
+
+    def create_map(self):
+        self.spawn_hp_pots()
+    
+    def spawn_enemies(self):
+        self.number_of_enemies = game_stats["number_of_enemies"][game_stats["current_wave"]-1]
+        enemy_name = ["Civ", "Soldier"]
+        num_of_enemies_spawned = 0
+        while num_of_enemies_spawned < self.number_of_enemies:
+            Enemy(random.choice(enemy_name), random.choice(self.enemy_spawn_pos))
+            num_of_enemies_spawned += 1
 
     def C_draw(self):
         self.offset.x = player.hitbox_rect.centerx - WIDTH // 2
