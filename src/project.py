@@ -612,12 +612,19 @@ class tile(pyg.sprite.Sprite):
                 TMP_Tuple = list(self.tile_pos)
                 TMP_Tuple[0] = self.tile_pos[0] + 894 * game_level.max_X_Tiles
                 self.tile_pos = TMP_Tuple
-                self.update_tile_pos(self.tile_pos)
             elif self.distance_from_playerX < -2000 and player.velocity_x < 0:
                 TMP_Tuple = list(self.tile_pos)
                 TMP_Tuple[0] = self.tile_pos[0] - 894 * game_level.max_X_Tiles
                 self.tile_pos = TMP_Tuple
-                self.update_tile_pos(self.tile_pos)
+            if self.distance_from_playerY > 2000 and player.velocity_y > 0:
+                TMP_Tuple = list(self.tile_pos)
+                TMP_Tuple[1] = self.tile_pos[1] + 894 * game_level.max_Y_tiles
+                self.tile_pos = TMP_Tuple
+            elif self.distance_from_playerY < -2000 and player.velocity_y < 0:
+                TMP_Tuple = list(self.tile_pos)
+                TMP_Tuple[1] = self.tile_pos[1] - 894 * game_level.max_Y_tiles
+                self.tile_pos = TMP_Tuple
+            self.update_tile_pos(self.tile_pos)
 
             
 
