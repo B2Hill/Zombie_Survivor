@@ -574,6 +574,7 @@ class Gamelevel(pyg.sprite.Group):
         enemy_name = ["Civ", "Soldier"]
         
         while self.num_of_enemies_spawned < self.number_of_enemies:
+            self.circle_center = player.hitbox_rect.center
             rand_angle = 2 * math.pi * random.random()
             r= self.enemy_spawn_radius_min * math.sqrt(random.random())
             x = r * math.cos(rand_angle) + self.circle_center[0]
