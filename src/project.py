@@ -102,6 +102,7 @@ class Player(pyg.sprite.Sprite):
 
         #player stats
         self.health = 100
+        self.xp = 0
 
 
     def player_facing(self):
@@ -319,6 +320,7 @@ class Enemy(pyg.sprite.Sprite):
         self.direction = pyg.math.Vector2()
         self.velocity = pyg.math.Vector2()
         self.min_distance = MinDist
+        self.max_distance = 2000
 
     def check_alive(self):
         if self.health <=0:
@@ -330,11 +332,14 @@ class Enemy(pyg.sprite.Sprite):
         player_vector = pyg.math.Vector2(player.rect.center)
         enemy_vector = pyg.math.Vector2(self.rect.center)
         distance = self.get_vector_distance(player_vector, enemy_vector)
-
+        
         if distance > self.min_distance:
             self.direction = (player_vector - enemy_vector).normalize()
         else:
             self.direction = pyg.math.Vector2(0,0)
+        if (distance > self.max_distance):
+            self.isDead = True
+
         
         self.velocity = self.direction * self.movement_speed
         self.position += self.velocity
@@ -562,22 +567,13 @@ class tile(pyg.sprite.Sprite):
         self.rect = self.image.get_rect(center = self.tile_pos)
         print(self.rect)
 
-    def get_vector_distance(self, Vect_1, Vect_2):
-        if int(Vect_1[0] - Vect_2[0]) < 0:
-            self.flipped = True
-            return (Vect_1 - Vect_2).magnitude()
-        else: 
-            self.flipped = False
-            return -1*(Vect_1 - Vect_2).magnitude()
     def get_distance(self, Vect_1, Vect_2, XYAbs):
         var = 0.0
         if XYAbs == 0:
             var = (Vect_1[0] - Vect_2[0])
-            print(f'player X:{Vect_1[0]} || {var}')
             return var
         elif XYAbs == 1:
             var = (Vect_1[1] - Vect_2[1])
-            #print(var)
             return var
         else:
             var = (Vect_1 - Vect_2).magnitude()
@@ -604,7 +600,7 @@ class tile(pyg.sprite.Sprite):
             self.ismoving = False
 
     def move_tile(self):
-        if math.fabs(self.distance_from_playerX) > self.tile_size[0]*2:
+        if math.fabs(self.distance_from_playerX) > self.tile_size[0]*2 or math.fabs(self.distance_from_playerY) > self.tile_size[1]*2:
             if self.isDead == False:
                 self.isDead = True
         if self.isDead and self.ismoving == True:
@@ -620,11 +616,12 @@ class tile(pyg.sprite.Sprite):
                 TMP_Tuple = list(self.tile_pos)
                 TMP_Tuple[1] = self.tile_pos[1] + 894 * game_level.max_Y_tiles
                 self.tile_pos = TMP_Tuple
-            elif self.distance_from_playerY < -2000 and player.velocity_y < 0:
+            elif self.distance_from_playerY < -1800 and player.velocity_y < 0:
                 TMP_Tuple = list(self.tile_pos)
                 TMP_Tuple[1] = self.tile_pos[1] - 894 * game_level.max_Y_tiles
                 self.tile_pos = TMP_Tuple
             self.update_tile_pos(self.tile_pos)
+            self.isDead = False
 
             
 
