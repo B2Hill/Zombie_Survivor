@@ -383,12 +383,12 @@ class Enemy(pyg.sprite.Sprite):
                              pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size),
                             pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size)]
                 
-                self.walk = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), 
-                             pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), 
-                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size)]
-                self.attack = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size)]
-                self.hurt = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size)]
-                self.die = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size)]
+                self.walk = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-0.png').convert_alpha(), 0, Size), 
+                             pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-1.png').convert_alpha(), 0, Size), 
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-2.png').convert_alpha(), 0, Size)]
+                self.attack = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size)]
+                self.hurt = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[3]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[3]}-1.png').convert_alpha(), 0, Size)]
+                self.die = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-1.png').convert_alpha(), 0, Size)]
 
 
                                 #Enemy Stats
@@ -463,13 +463,14 @@ class Enemy(pyg.sprite.Sprite):
                 if self.currentActionState == 0:  ##IDLE
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.idle)) 
                     self.image = self.idle[(self.currentFrame)]
-                    print("IdleFrame")
                     
                 elif self.currentActionState == 1:  ##Walk
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.walk)) 
                     self.image = self.walk[(self.currentFrame)]
                     if self.name == "Sold":
                         print(f"Walk Frame :{self.currentFrame} || {self.walk}")
+                    if self.image == self.idle[self.currentFrame]:
+                        print(f"FUCK!")
                     
         #Walking load
                 elif self.currentActionState == 2:  ##Attack
