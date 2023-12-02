@@ -283,18 +283,19 @@ class Enemy(pyg.sprite.Sprite):
 
     def __init__(self,name = "civ", position=(500,500),Sprite_Location=rf'src\sprites\Player\Option_1\Zombie_Player.png', MinDist = 0):
         super().__init__(enemy_group, all_sprites_group)
-        self.zombiesheet = Spritesheet(Sprite_Location)
-
+        self.Enemysheet = Spritesheet(Sprite_Location)
         self.currentFrame = 0
         self.actions = ["Idle","Walk","Attack","Hurt","Die"]
         self.currentAction = self.actions[0]
         self.currentActionState = 0
+        self.name = name
 
         ### SPRITESHEET DATA ###
-        self.idle = [pyg.transform.rotozoom(self.zombiesheet.parse_sprite(f'Zombie_{self.actions[0]}-0.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.zombiesheet.parse_sprite(f'Zombie_{self.actions[0]}-1.png').convert_alpha(), 0, ENEMY_SIZE),
-                      pyg.transform.rotozoom(self.zombiesheet.parse_sprite(f'Zombie_{self.actions[0]}-2.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.zombiesheet.parse_sprite(f'Zombie_{self.actions[0]}-3.png').convert_alpha(), 0, ENEMY_SIZE),
-                      pyg.transform.rotozoom(self.zombiesheet.parse_sprite(f'Zombie_{self.actions[0]}-4.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.zombiesheet.parse_sprite(f'Zombie_{self.actions[0]}-5.png').convert_alpha(), 0, ENEMY_SIZE),
-                      pyg.transform.rotozoom(self.zombiesheet.parse_sprite(f'Zombie_{self.actions[0]}-6.png').convert_alpha(), 0, ENEMY_SIZE)]
+        ### Defaults to Civilian Type###
+        self.idle = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-0.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-1.png').convert_alpha(), 0, ENEMY_SIZE),
+                      pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-2.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-3.png').convert_alpha(), 0, ENEMY_SIZE),
+                      pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-4.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-5.png').convert_alpha(), 0, ENEMY_SIZE),
+                      pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-6.png').convert_alpha(), 0, ENEMY_SIZE)]
         
         #Image variables
         self.image = self.idle[0]
@@ -317,6 +318,7 @@ class Enemy(pyg.sprite.Sprite):
         self.dmg = 10
         self.xp = 10
         self.xp_given = False
+        self.strength = 1
 
         #Enemy Movement
         self.direction = pyg.math.Vector2()
@@ -324,9 +326,85 @@ class Enemy(pyg.sprite.Sprite):
         self.min_distance = MinDist
         self.max_distance = 2000
 
+        self.set_EnemyType(self.name)
+
+    def set_EnemyType(self, name):
+            print(f"RESETING ENEMY TYPE!  {name}")
+            if name == "Civ":  ###Civilian Enemy###
+                # redo initilization
+                self.Enemysheet = Spritesheet(rf'src\sprites\Player\Option_1\Zombie_Player.png')
+                self.currentFrame = 0
+                self.actions = ["Idle","Walk","Attack","Hurt","Die"]
+                self.currentAction = self.actions[0]
+                self.currentActionState = 0
+
+                ### SPRITESHEET DATA ###
+                self.idle = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-0.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-1.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-2.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-3.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-4.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-5.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-6.png').convert_alpha(), 0, ENEMY_SIZE)]
+                self.walk = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-0.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-1.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-2.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-3.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-4.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-5.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-6.png').convert_alpha(), 0, ENEMY_SIZE)]
+                self.attack = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-0.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-1.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-2.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-3.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-4.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-5.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-6.png').convert_alpha(), 0, ENEMY_SIZE)]
+                self.hurt = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-0.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-1.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-2.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-3.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-4.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-5.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-6.png').convert_alpha(), 0, ENEMY_SIZE)]
+                self.die = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-0.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-1.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-2.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-3.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-4.png').convert_alpha(), 0, ENEMY_SIZE), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-5.png').convert_alpha(), 0, ENEMY_SIZE),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Zombie_{self.actions[0]}-6.png').convert_alpha(), 0, ENEMY_SIZE)]
+                #Enemy Stats
+                self.health = 20
+                self.movement_speed = ENEMY_SPEED *1
+                self.dmg = 10
+                self.xp = 10
+                self.xp_given = False
+                self.strength = 1
+                self.is_Ranged = False
+
+            elif name == "Sold":  ###Soldier Enemy###
+                # redo initilization
+                self.Enemysheet = Spritesheet(rf'src\sprites\Enemy\Soldier\spritesheet.png')
+                self.currentFrame = 0
+                self.actions = ["Idle","Walk","Attack","Hurt","Die"]
+                self.currentAction = self.actions[0]
+                self.currentActionState = 0
+
+                Size = ENEMY_SIZE + 1
+
+                ### SPRITESHEET DATA ###
+                self.idle = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size),
+                             pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size),
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size)]
+                
+                self.walk = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), 
+                             pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size), 
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-2.png').convert_alpha(), 0, Size)]
+                self.attack = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size)]
+                self.hurt = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size)]
+                self.die = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[0]}-1.png').convert_alpha(), 0, Size)]
+
+
+                                #Enemy Stats
+                self.health = 20
+                self.movement_speed = ENEMY_SPEED +1
+                self.dmg = 20
+                self.xp = 30
+                self.xp_given = False
+                self.strength = 2
+                self.min_distance = 300
+                self.is_Ranged = True
+
     def check_alive(self):
         if self.health <=0:
             self.isDead = True
+            self.update_action(4)
 
 
     def hunt_player(self):
@@ -337,12 +415,14 @@ class Enemy(pyg.sprite.Sprite):
         
         if distance > self.min_distance:
             self.direction = (player_vector - enemy_vector).normalize()
+            self.update_action(1)
         else:
             self.direction = pyg.math.Vector2(0,0)
-            self.xp = 0
+            self.update_action(2)
+
         if (distance > self.max_distance):
             self.isDead = True
-            self.xp = 0
+           
             
 
         
@@ -366,6 +446,8 @@ class Enemy(pyg.sprite.Sprite):
             self.currentFrame = 0
             self.currentActionState = ACTIONSTATE
             self.currentAction = self.actions[ACTIONSTATE]
+            print(f"{ACTIONSTATE}")
+            self._reset_idle()
 
     def is_idle(self):
         if self.isDead == False:
@@ -373,32 +455,36 @@ class Enemy(pyg.sprite.Sprite):
                 self.idletick += 1
             else:
                 self.update_action(0)
-
+    def _reset_idle(self):
+        self.idletick = 0
     def update_frame(self):
         if self.currentAction == self.actions[self.currentActionState]:
                 #print(f"{self.currentAction} || {self.actions[self.currentActionState]}")
-                if self.currentActionState == 0:
+                if self.currentActionState == 0:  ##IDLE
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.idle)) 
                     self.image = self.idle[(self.currentFrame)]
+                    print("IdleFrame")
                     
-                elif self.currentActionState == 1:
-                    self.currentFrame = ((self.currentFrame + 1)) % (len(self.walking)) 
-                    self.image = self.walking[(self.currentFrame)]
+                elif self.currentActionState == 1:  ##Walk
+                    self.currentFrame = ((self.currentFrame + 1)) % (len(self.walk)) 
+                    self.image = self.walk[(self.currentFrame)]
+                    if self.name == "Sold":
+                        print(f"Walk Frame :{self.currentFrame} || {self.walk}")
                     
         #Walking load
-                elif self.currentActionState == 2:
-                    self.currentFrame = ((self.currentFrame + 1)) % (len(self.attacking)) 
-                    self.image = self.attacking[(self.currentFrame)]
+                elif self.currentActionState == 2:  ##Attack
+                    self.currentFrame = ((self.currentFrame + 1)) % (len(self.attack)) 
+                    self.image = self.attack[(self.currentFrame)]
                     
         #Attacking load
-                elif self.currentActionState == 3:
-                    self.currentFrame = ((self.currentFrame + 1)) % (len(self.hurting)) 
-                    self.image = self.hurting[(self.currentFrame)]
+                elif self.currentActionState == 3: ##Hurt
+                    self.currentFrame = ((self.currentFrame + 1)) % (len(self.hurt)) 
+                    self.image = self.hurt[(self.currentFrame)]
                     
         #Hurting load
-                elif self.currentActionState == 4:
-                    self.currentFrame = ((self.currentFrame + 1)) % (len(self.dying)) 
-                    self.image = self.dying[(self.currentFrame)]
+                elif self.currentActionState == 4: ##Die
+                    self.currentFrame = ((self.currentFrame + 1)) % (len(self.die)) 
+                    self.image = self.die[(self.currentFrame)]
                     
         #Dying load
                 else:
@@ -421,6 +507,7 @@ class Enemy(pyg.sprite.Sprite):
             if pyg.Rect.colliderect(self.hitbox_rect, player.hitbox_rect):
                 player.get_dmg(self.dmg)
                 self.isDead = True
+                self.xp = 0
 
     def update(self):
         self.check_alive()
@@ -442,6 +529,7 @@ class Enemy(pyg.sprite.Sprite):
                 enemy_group.remove(self)
                 self.deathtrigger = True
                 game_level.num_of_enemies_spawned -=1
+                game_level.difficulty +=.1
             if self.idletick < 500:
                 self.idletick += 1
             else:
@@ -674,6 +762,7 @@ class Gamelevel(pyg.sprite.Group):
         self.enemy_spawn_radius_min = SPAWN_MIN
         self.enemy_spawn_radius_max = SPAWN_MAX
         self.num_of_enemies_spawned = 0
+        self.difficulty = 0.0
         
         
         self.max_X_Tiles = 4
@@ -717,7 +806,7 @@ class Gamelevel(pyg.sprite.Group):
     def spawn_enemies(self):
         
         self.number_of_enemies = game_stats["number_of_enemies"][game_stats["current_wave"]-1]
-        enemy_name = ["Civ", "Soldier"]
+        enemy_name = ["Civ", "Sold"]
         
         while self.num_of_enemies_spawned < self.number_of_enemies:
             self.circle_center = player.hitbox_rect.center
