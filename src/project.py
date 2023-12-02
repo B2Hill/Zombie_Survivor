@@ -26,7 +26,8 @@ score_font = pyg.font.Font("src/font/PublicPixel.ttf",50)
 #Group Initialization
 background_group = pyg.sprite.Group()
 all_sprites_group = pyg.sprite.Group()
-bullet_group = pyg.sprite.Group()
+Player_bullet_group = pyg.sprite.Group()
+Enemy_bullet_group = pyg.sprite.Group()
 enemy_group = pyg.sprite.Group()
 obstacles_group = pygame.sprite.Group()
 player_group = pyg.sprite.Group()
@@ -45,6 +46,7 @@ class Player(pyg.sprite.Sprite):
         self.actions = ["Idle","Walk","Attack","Hurt","Die"]
         self.currentAction = self.actions[0]
         self.currentActionState = 0
+        self.name = "Player"
 
         ### SPRITESHEET DATA ###
         self.idle = [pyg.transform.rotozoom(self.zombiesheet.parse_sprite(f'Zombie_{self.actions[0]}-0.png').convert_alpha(), 0, PLAYER_SIZE), pyg.transform.rotozoom(self.zombiesheet.parse_sprite(f'Zombie_{self.actions[0]}-1.png').convert_alpha(), 0, PLAYER_SIZE),
@@ -105,6 +107,7 @@ class Player(pyg.sprite.Sprite):
         self.health = 100
         self.xp = 0
         self.dmg = 10
+        self.isDead = False
 
 
     def player_facing(self):
@@ -228,8 +231,8 @@ class Player(pyg.sprite.Sprite):
             else:
                 spawn_bullet_pos[0] = self.vec_pos[0] - self.attack_offset[0]
                 spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
-            self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, damage=self.dmg)
-            bullet_group.add(self.bullet)
+            self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, damage=self.dmg, owner=0)
+            Player_bullet_group.add(self.bullet)
             all_sprites_group.add(self.bullet)
             #print(spawn_bullet_pos)
 
@@ -237,8 +240,9 @@ class Player(pyg.sprite.Sprite):
         if ui.current_health > 0:
             ui.current_health -= ammmount
             self.health= ui.current_health
-            if ui.current_health < 0:
+            if ui.current_health <= 0:
                 self.health = 0
+                self.isDead = True
     
     def check_collision(self, direction):
         for sprite in obstacles_group:
@@ -332,7 +336,6 @@ class Enemy(pyg.sprite.Sprite):
         self.set_EnemyType(self.name)
 
     def set_EnemyType(self, name):
-            print(f"RESETING ENEMY TYPE!  {name}")
             if name == "Civ":  ###Civilian Enemy###
                 # redo initilization
                 self.Enemysheet = Spritesheet(rf'src\sprites\Player\Option_1\Zombie_Player.png')
@@ -420,23 +423,24 @@ class Enemy(pyg.sprite.Sprite):
             self.isDead = True
             self.update_action(4)
 
-    def is_attacking(self):
-            if self.attack_cooldown == 0:
-                
-                self.update_action(2)
-                self.attack_cooldown = ATTACK_COOLDOWN
-                spawn_bullet_pos = list(self.vec_pos)
-                
-                if self.flipped == False:
-                    spawn_bullet_pos[0] = self.vec_pos[0] + self.attack_offset[0]
-                    spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
-                else:
-                    spawn_bullet_pos[0] = self.vec_pos[0] - self.attack_offset[0]
-                    spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
-                self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, damage=self.dmg)
-                bullet_group.add(self.bullet)
-                all_sprites_group.add(self.bullet)
-                #print(spawn_bullet_pos)
+    def is_attacking(self, EnemyVect, PlayerVect):
+            spawn_bullet_pos = list(self.position)
+            
+            dx = PlayerVect[0] - EnemyVect[0]
+            dy = EnemyVect[1] - PlayerVect[1]
+            rads = math.atan2(-dy,dx)
+            rads %= 2 * math.pi
+            angle = math.degrees(rads) -180
+
+            if self.flipped == False:
+                spawn_bullet_pos[0] = self.position[0] #+ self.attack_offset[0]
+                spawn_bullet_pos[1] = self.position[1] #+ self.attack_offset[1]
+            else:
+                spawn_bullet_pos[0] = self.position[0] #- self.attack_offset[0]
+                spawn_bullet_pos[1] = self.position[1] #+ self.attack_offset[1]
+            self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], angle, owner=1, damage=self.dmg)
+            Enemy_bullet_group.add(self.bullet)
+            all_sprites_group.add(self.bullet)
 
     def hunt_player(self):
         
@@ -454,6 +458,7 @@ class Enemy(pyg.sprite.Sprite):
                 if self.isDead == False: 
                     self.update_action(2)
                     self.CD_Timer = self.CD
+                    self.is_attacking(player_vector, enemy_vector)
             if self.currentFrame == len(self.attack)-1:
                 if self.isDead == False: 
                     self.update_action(0)
@@ -515,7 +520,6 @@ class Enemy(pyg.sprite.Sprite):
                 elif self.currentActionState == 2:  ##Attack
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.attack)) 
                     self.image = self.attack[(self.currentFrame)]
-                    print(self.currentFrame)
 
                     
         #Attacking load
@@ -583,7 +587,7 @@ class Enemy(pyg.sprite.Sprite):
 
 #Bullet Class
 class Bullet(pyg.sprite.Sprite):
-    def __init__(self, x, y, angle,owner = 'player', damage = 0):
+    def __init__(self, x, y, angle,owner = 0, damage = 0):
         super().__init__()
         self.image =pygame.image.load("src\sprites\FX\Preview\Smoke7.gif").convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, BULLET_SCALE)
@@ -591,7 +595,7 @@ class Bullet(pyg.sprite.Sprite):
         self.rect.center = (x,y)
         self.x = x
         self.y = y 
-        self.owner = owner ## 'player' or 'enemy'
+        self.owner = owner ## 0 = player
         
         self.speed = BULLET_SPEED
         self.angle = angle
@@ -615,18 +619,21 @@ class Bullet(pyg.sprite.Sprite):
             #print("bullet dead")
 
     def collisions(self):
-        if self.owner == 'player':
-            hits = pyg.sprite.groupcollide(enemy_group, bullet_group, False, True, hitbox_collide)
+        if self.owner == 0:
+            hits = pyg.sprite.groupcollide(enemy_group, Player_bullet_group, False, True, hitbox_collide)
 
             for hit in hits:
                 if hit.isDead == False:
                     hit.health -= self.dmg
+                    print(hit.name)
         else:
-            hits = pyg.sprite.groupcollide(player_group, bullet_group, False, True, hitbox_collide)
+            hits = pyg.sprite.groupcollide(player_group, Enemy_bullet_group, False, True, hitbox_collide)
 
             for hit in hits:
                 if hit.isDead == False:
-                    hit.health -= self.dmg
+                    player.get_dmg(self.dmg)
+                    print(hit.name)
+                    
                 
 
             
@@ -696,16 +703,6 @@ class UI():
         wave_surface = font.render(f"wave: {game_stats['current_wave']}",False, GREEN)
         wave_rect = wave_surface.get_rect(center = (745,28)) ### Set to Adjust with screen Size
         screen.blit(wave_surface, wave_rect)
-    ##############################
-    ###Change for Score Display###
-    ##############################
-    #def display_coin(self):
-    #        coin_img = pyg.image.load()
-    #        coin_img = pyg.transform.scale_by(coin_img, 3)
-    #        coin_img_rect = coin_img.get_rect(center = (1162 , 30))### Set to Adjust with screen Size
-    #        coin_txt = font.render(f"x {game_stats['coins']}", True, (255,223,91))
-    #        screen.blit(coin_txt, (1200, 20))
-    #        screen.blit(coin_img, coin_img_rect)
 
     def display_timer(self):
         text_1 = font.render(f'{int(self.time / 1000)} Seconds', True, RED)
@@ -887,7 +884,7 @@ class Gamelevel(pyg.sprite.Group):
             for badguy in enemy_group:
                 Enemy_Rect = badguy.rect.copy().move(-self.offset.x, -self.offset.y)
                 pyg.draw.rect(screen, RED, Enemy_Rect, width=2)
-            for sprite in bullet_group:
+            for sprite in Player_bullet_group:
                 bullet_rect = sprite.rect.copy().move(-self.offset.x, -self.offset.y)
                 pyg.draw.rect(screen, WHITE, bullet_rect, width=1)
             for Bg in background_group:
