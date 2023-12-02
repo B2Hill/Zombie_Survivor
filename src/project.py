@@ -310,6 +310,7 @@ class Enemy(pyg.sprite.Sprite):
         self.deathtrigger = False
         #idle Var
         self.idletick = 0
+        self.CD_Timer = 0
 
         #Enemy Stats
         self.health = 20
@@ -367,6 +368,7 @@ class Enemy(pyg.sprite.Sprite):
                 self.xp_given = False
                 self.strength = 1
                 self.is_Ranged = False
+                self.CD = 500
 
             elif name == "Sold":  ###Soldier Enemy###
                 # redo initilization
@@ -386,8 +388,14 @@ class Enemy(pyg.sprite.Sprite):
                 self.walk = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-0.png').convert_alpha(), 0, Size), 
                              pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-1.png').convert_alpha(), 0, Size), 
                             pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-2.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[1]}-2.png').convert_alpha(), 0, Size)]
-                self.attack = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size)]
+                
+                self.attack = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size), 
+                               pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size),  pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size),  pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size), 
+                               pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size),  pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size),pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size),
+                               pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size)]
+
                 self.hurt = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[3]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[3]}-1.png').convert_alpha(), 0, Size)]
+                
                 self.die = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-1.png').convert_alpha(), 0, Size)]
 
 
@@ -400,6 +408,7 @@ class Enemy(pyg.sprite.Sprite):
                 self.strength = 2
                 self.min_distance = 300
                 self.is_Ranged = True
+                self.CD = 300
 
     def check_alive(self):
         if self.health <=0:
@@ -415,10 +424,19 @@ class Enemy(pyg.sprite.Sprite):
         
         if distance > self.min_distance:
             self.direction = (player_vector - enemy_vector).normalize()
+            
             self.update_action(1)
+                
         else:
             self.direction = pyg.math.Vector2(0,0)
-            self.update_action(2)
+            if self.CD_Timer <= 0:
+                self.update_action(2)
+                self.CD_Timer = self.CD
+            if self.currentFrame == len(self.attack)-1:
+                self.update_action(0)
+                print(self.CD_Timer)
+            if self.CD_Timer > 0:
+                self.CD_Timer -= 1
 
         if (distance > self.max_distance):
             self.isDead = True
@@ -446,7 +464,7 @@ class Enemy(pyg.sprite.Sprite):
             self.currentFrame = 0
             self.currentActionState = ACTIONSTATE
             self.currentAction = self.actions[ACTIONSTATE]
-            print(f"{ACTIONSTATE}")
+
             self._reset_idle()
 
     def is_idle(self):
@@ -458,6 +476,7 @@ class Enemy(pyg.sprite.Sprite):
     def _reset_idle(self):
         self.idletick = 0
     def update_frame(self):
+        
         if self.currentAction == self.actions[self.currentActionState]:
                 #print(f"{self.currentAction} || {self.actions[self.currentActionState]}")
                 if self.currentActionState == 0:  ##IDLE
@@ -467,15 +486,13 @@ class Enemy(pyg.sprite.Sprite):
                 elif self.currentActionState == 1:  ##Walk
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.walk)) 
                     self.image = self.walk[(self.currentFrame)]
-                    if self.name == "Sold":
-                        print(f"Walk Frame :{self.currentFrame} || {self.walk}")
-                    if self.image == self.idle[self.currentFrame]:
-                        print(f"FUCK!")
                     
         #Walking load
                 elif self.currentActionState == 2:  ##Attack
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.attack)) 
                     self.image = self.attack[(self.currentFrame)]
+                    print(self.currentFrame)
+
                     
         #Attacking load
                 elif self.currentActionState == 3: ##Hurt
