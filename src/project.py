@@ -36,6 +36,8 @@ player_group = pyg.sprite.Group()
 def hitbox_collide(sprite1, sprite2):
     return sprite1.hitbox_rect.colliderect(sprite2.rect)
 
+
+
 #Character Class
 class Player(pyg.sprite.Sprite):
     def __init__(self, Sprite_Location=rf'src\sprites\Player\Option_1\Zombie_Player.png', pos = (WIDTH // 2, HEIGHT //2)):
@@ -84,10 +86,11 @@ class Player(pyg.sprite.Sprite):
         #Location Variables
         self.pos = pyg.math.Vector2(PLAYER_START_X, PLAYER_START_Y)
         self.speed = PLAYER_SPEED
+        self.angle = 0
 
         #Attack Variables
         self.attack = False
-        self.attack_cooldown = 0
+        self.attack_cooldown = 100
         self.attack_offset = pyg.math.Vector2(ATTACK_OFFSET_X, ATTACK_OFFSET_Y)
         
         #MOVE Variables
@@ -170,39 +173,40 @@ class Player(pyg.sprite.Sprite):
         #SKIP
                 
     def user_input(self):
-        self.velocity_x = 0
-        self.velocity_y = 0
-        #print("MOVE!")
-        keys = pyg.key.get_pressed()
+        if self.attack_cooldown == 0 and ui.Current_State == 1:
+            self.velocity_x = 0
+            self.velocity_y = 0
+            #print("MOVE!")
+            keys = pyg.key.get_pressed()
 
-        if keys[pyg.K_w]:
-            self.velocity_y = -self.speed
-            self.idletick = 0
-            self.update_action(1)
-        if keys[pyg.K_s]:
-            self.velocity_y = self.speed
-            self.idletick = 0
-            self.update_action(1)
-        if keys[pyg.K_a]:
-            self.velocity_x = -self.speed
-            self.idletick = 0
-            self.update_action(1)
-        if keys[pyg.K_d]:
-            self.velocity_x = self.speed
-            self.idletick = 0
-            self.update_action(1)
+            if keys[pyg.K_w]:
+                self.velocity_y = -self.speed
+                self.idletick = 0
+                self.update_action(1)
+            if keys[pyg.K_s]:
+                self.velocity_y = self.speed
+                self.idletick = 0
+                self.update_action(1)
+            if keys[pyg.K_a]:
+                self.velocity_x = -self.speed
+                self.idletick = 0
+                self.update_action(1)
+            if keys[pyg.K_d]:
+                self.velocity_x = self.speed
+                self.idletick = 0
+                self.update_action(1)
 
-        if self.velocity_x != 0 and self.velocity_y != 0:
-            self.velocity_x /= math.sqrt(2)
-            self.velocity_y /= math.sqrt(2)
+            if self.velocity_x != 0 and self.velocity_y != 0:
+                self.velocity_x /= math.sqrt(2)
+                self.velocity_y /= math.sqrt(2)
 
-        if pyg.mouse.get_pressed() == (1,0, 0) or keys[pyg.K_SPACE]:
-            self.attack = True
-            self.idletick = 0
-            #print(self.angle)
-            self.is_attacking()
-        else:
-            self.attack = False
+            if pyg.mouse.get_pressed() == (1,0, 0) or keys[pyg.K_SPACE]:
+                self.attack = True
+                self.idletick = 0
+                #print(self.angle)
+                self.is_attacking()
+            else:
+                self.attack = False
 
     def is_idle(self):
         if self.idletick < 500:
@@ -219,22 +223,20 @@ class Player(pyg.sprite.Sprite):
             self.currentAction = self.actions[ACTIONSTATE]
 
     def is_attacking(self):
-        if self.attack_cooldown == 0:
             
-            self.update_action(2)
-            self.attack_cooldown = ATTACK_COOLDOWN
-            spawn_bullet_pos = list(self.vec_pos)
-            
-            if self.flipped == False:
-                spawn_bullet_pos[0] = self.vec_pos[0] + self.attack_offset[0]
-                spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
-            else:
-                spawn_bullet_pos[0] = self.vec_pos[0] - self.attack_offset[0]
-                spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
-            self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, damage=self.dmg, owner=0)
-            Player_bullet_group.add(self.bullet)
-            all_sprites_group.add(self.bullet)
-            #print(spawn_bullet_pos)
+        self.update_action(2)
+        self.attack_cooldown = ATTACK_COOLDOWN
+        spawn_bullet_pos = list(self.vec_pos)            
+        if self.flipped == False:
+            spawn_bullet_pos[0] = self.vec_pos[0] + self.attack_offset[0]
+            spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
+        else:
+            spawn_bullet_pos[0] = self.vec_pos[0] - self.attack_offset[0]
+            spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
+        self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, damage=self.dmg, owner=0)
+        Player_bullet_group.add(self.bullet)
+        all_sprites_group.add(self.bullet)
+
 
     def get_dmg(self, ammmount):
         if ui.current_health > 0:
@@ -658,6 +660,10 @@ class UI():
         self.debugtimerbool = False
         self.debugTXT = ""
 
+        #Game States
+        self.Game_state = ["Main_Menu", "Playing", "Paused", "Game_Over","initalizing"]
+        self.Current_State = 0 ## Change this once the main menu is working
+
 
     def Count_debug_timer(self):
         self.debugtimer -= 1
@@ -892,40 +898,109 @@ class Gamelevel(pyg.sprite.Group):
                 pyg.draw.rect(screen, GREEN, background_rect, width=2)
 
 
+
+class Button():
+    def __init__(self, Xpos, Ypos, img=pyg.image.load("src\sprites\Buttons\Button-Start.png"),function = 0):
+        self.img = img
+        self.rect = self.img.get_rect()
+        self.rect.topleft =(Xpos,Ypos)
+        self.isClicked=False
+        self.buttonFunction = ["Start","Quit","Restart","Main Menu"]
+        self.assignedFunction = function
+    
+    def update(self):
+        screen.blit(self.img, (self.rect.x, self.rect.y))
+
+    def _Function(self):
+        if self.buttonFunction[self.assignedFunction] == self.buttonFunction[0]:  ##Start Button
+            ui.Current_State = 1
+        if self.buttonFunction[self.assignedFunction] == self.buttonFunction[1]:  ##Quit Button
+            quit()
+        if self.buttonFunction[self.assignedFunction] == self.buttonFunction[2]:  ##Restart Button
+            pass
+        if self.buttonFunction[self.assignedFunction] == self.buttonFunction[0]:  ##Main Menu Button
+            pass
+class Menu():
+    pass
+
+
 player = Player()
 #Testbadguy = Enemy(MinDist= 200, position=(600,600))
 ui = UI()
 game_level = Gamelevel()
 
+
+
+
+
 def main():
-    #TODO MAIN STATMENT
-    #Set Player sprite
+    B = Button(500,500,function=0)
     
     
    
     while True:
-        ui.update_time(pyg.time.get_ticks())
-        keys = pyg.key.get_pressed()
-        for event in pyg.event.get():
-            if event.type == pyg.QUIT:
-                pyg.quit()
-                exit()
-            if event.type == pyg.KEYDOWN:
-                if event.key == pyg.K_F1:
-                    print("F1")
-                    ui.debugTXT = f"Spawn Test Bad guy at: {player.pos[0]+600,player.pos[1]+600}"
-                    ui.debugtimerbool = True
-                    Testbadguy = Enemy(MinDist= 200, position=(player.pos[0]+600,player.pos[1]+600))
-            if event.type == pyg.KEYUP:
-                pass
+        while ui.Game_state[ui.Current_State] == ui.Game_state[0]:  ## Main Menu state
+            keys = pyg.key.get_pressed()
+            for event in pyg.event.get():
+                if event.type == pyg.QUIT:
+                    pyg.quit()
+                    exit()
+                if event.type == pyg.MOUSEBUTTONDOWN:
+                    mouseLoc = pyg.mouse.get_pos()     
+                    if B.rect.collidepoint(mouseLoc):
+                        B._Function()
+            B.update()
+            pyg.display.update()
 
-        #Set Game Background Image
-        screen.fill('black')
-        game_level.C_draw()
-        background_group.update()
-        all_sprites_group.update()
-        ui.update()
-        game_level.spawn_enemies()
+
+        while ui.Game_state[ui.Current_State] == ui.Game_state[1]:  ##Playing State
+            ui.update_time(pyg.time.get_ticks())
+            keys = pyg.key.get_pressed()
+            for event in pyg.event.get():
+                if event.type == pyg.QUIT:
+                    pyg.quit()
+                    exit()
+                if event.type == pyg.KEYDOWN:
+                    if event.key == pyg.K_ESCAPE:
+                        print("PAUSED")
+                        ui.Current_State=2 ## Pause Game
+                    if event.key == pyg.K_F1:
+                        print("F1")
+                        ui.debugTXT = f"Spawn Test Bad guy at: {player.pos[0]+600,player.pos[1]+600}"
+                        ui.debugtimerbool = True
+                        Testbadguy = Enemy(MinDist= 200, position=(player.pos[0]+600,player.pos[1]+600))
+                if event.type == pyg.KEYUP:
+                    pass
+
+            screen.fill('black')
+            game_level.C_draw()
+            background_group.update()
+            all_sprites_group.update()
+            ui.update()
+            game_level.spawn_enemies()
+
+            pyg.display.update()
+            
+            
+
+        while ui.Game_state[ui.Current_State] == ui.Game_state[2]:  ##Paused State
+            keys = pyg.key.get_pressed()
+            for event in pyg.event.get():
+                if event.type == pyg.QUIT:
+                    pyg.quit()
+                    exit()
+                if event.type == pyg.KEYDOWN:
+                    if event.key == pyg.K_ESCAPE:
+                        print("UnPuased")
+                        ui.Current_State=1 ## Unpause Game
+
+        while ui.Game_state[ui.Current_State] == ui.Game_state[3]:  ##paused State
+            keys = pyg.key.get_pressed()
+            for event in pyg.event.get():
+                if event.type == pyg.QUIT:
+                    pyg.quit()
+                    exit()
+
         
         
 
@@ -933,7 +1008,7 @@ def main():
         
 
         #Update Display
-        pyg.display.update()
+        
         clock.tick(FPS)
 
 if __name__ == "__main__":
