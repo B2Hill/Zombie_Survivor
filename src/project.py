@@ -29,6 +29,7 @@ all_sprites_group = pyg.sprite.Group()
 bullet_group = pyg.sprite.Group()
 enemy_group = pyg.sprite.Group()
 obstacles_group = pygame.sprite.Group()
+player_group = pyg.sprite.Group()
 
 #Collider
 def hitbox_collide(sprite1, sprite2):
@@ -37,7 +38,7 @@ def hitbox_collide(sprite1, sprite2):
 #Character Class
 class Player(pyg.sprite.Sprite):
     def __init__(self, Sprite_Location=rf'src\sprites\Player\Option_1\Zombie_Player.png', pos = (WIDTH // 2, HEIGHT //2)):
-        super().__init__(all_sprites_group)
+        super().__init__(all_sprites_group, player_group)
         self.zombiesheet = Spritesheet(Sprite_Location)
         #Init Vars
         self.currentFrame = 0
@@ -103,6 +104,7 @@ class Player(pyg.sprite.Sprite):
         #player stats
         self.health = 100
         self.xp = 0
+        self.dmg = 10
 
 
     def player_facing(self):
@@ -226,7 +228,7 @@ class Player(pyg.sprite.Sprite):
             else:
                 spawn_bullet_pos[0] = self.vec_pos[0] - self.attack_offset[0]
                 spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
-            self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
+            self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, damage=self.dmg)
             bullet_group.add(self.bullet)
             all_sprites_group.add(self.bullet)
             #print(spawn_bullet_pos)
@@ -394,9 +396,12 @@ class Enemy(pyg.sprite.Sprite):
                                pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size),  pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size),pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-0.png').convert_alpha(), 0, Size),
                                pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[2]}-1.png').convert_alpha(), 0, Size)]
 
-                self.hurt = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[3]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[3]}-1.png').convert_alpha(), 0, Size)]
+                self.hurt = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[3]}-0.png').convert_alpha(), 0, Size), 
+                             pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[3]}-1.png').convert_alpha(), 0, Size)]
                 
-                self.die = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-1.png').convert_alpha(), 0, Size)]
+                self.die = [pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-0.png').convert_alpha(), 0, Size), 
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-0.png').convert_alpha(), 0, Size), pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-0.png').convert_alpha(), 0, Size), 
+                            pyg.transform.rotozoom(self.Enemysheet.parse_sprite(f'Soldier_{self.actions[4]}-1.png').convert_alpha(), 0, Size)]
 
 
                                 #Enemy Stats
@@ -415,6 +420,23 @@ class Enemy(pyg.sprite.Sprite):
             self.isDead = True
             self.update_action(4)
 
+    def is_attacking(self):
+            if self.attack_cooldown == 0:
+                
+                self.update_action(2)
+                self.attack_cooldown = ATTACK_COOLDOWN
+                spawn_bullet_pos = list(self.vec_pos)
+                
+                if self.flipped == False:
+                    spawn_bullet_pos[0] = self.vec_pos[0] + self.attack_offset[0]
+                    spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
+                else:
+                    spawn_bullet_pos[0] = self.vec_pos[0] - self.attack_offset[0]
+                    spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
+                self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, damage=self.dmg)
+                bullet_group.add(self.bullet)
+                all_sprites_group.add(self.bullet)
+                #print(spawn_bullet_pos)
 
     def hunt_player(self):
         
@@ -424,17 +446,17 @@ class Enemy(pyg.sprite.Sprite):
         
         if distance > self.min_distance:
             self.direction = (player_vector - enemy_vector).normalize()
-            
-            self.update_action(1)
+            if self.isDead == False : self.update_action(1)
                 
         else:
             self.direction = pyg.math.Vector2(0,0)
             if self.CD_Timer <= 0:
-                self.update_action(2)
-                self.CD_Timer = self.CD
+                if self.isDead == False: 
+                    self.update_action(2)
+                    self.CD_Timer = self.CD
             if self.currentFrame == len(self.attack)-1:
-                self.update_action(0)
-                print(self.CD_Timer)
+                if self.isDead == False: 
+                    self.update_action(0)
             if self.CD_Timer > 0:
                 self.CD_Timer -= 1
 
@@ -473,8 +495,10 @@ class Enemy(pyg.sprite.Sprite):
                 self.idletick += 1
             else:
                 self.update_action(0)
+    
     def _reset_idle(self):
         self.idletick = 0
+    
     def update_frame(self):
         
         if self.currentAction == self.actions[self.currentActionState]:
@@ -501,8 +525,9 @@ class Enemy(pyg.sprite.Sprite):
                     
         #Hurting load
                 elif self.currentActionState == 4: ##Die
-                    self.currentFrame = ((self.currentFrame + 1)) % (len(self.die)) 
-                    self.image = self.die[(self.currentFrame)]
+                    if self.currentFrame < len(self.die)-1:
+                        self.currentFrame = ((self.currentFrame + 1)) % (len(self.die)) 
+                        self.image = self.die[(self.currentFrame)]
                     
         #Dying load
                 else:
@@ -529,10 +554,10 @@ class Enemy(pyg.sprite.Sprite):
 
     def update(self):
         self.check_alive()
+        self.update_frame()
         if self.isDead == False:
             if self.get_vector_distance(pyg.math.Vector2(player.hitbox_rect.center), pygame.math.Vector2(self.hitbox_rect.center)) < 100:
-                self.player_collision()
-            self.update_frame()
+                self.player_collision()     
             self.is_idle()
             self.hunt_player()
             self.flip_image()
@@ -558,7 +583,7 @@ class Enemy(pyg.sprite.Sprite):
 
 #Bullet Class
 class Bullet(pyg.sprite.Sprite):
-    def __init__(self, x, y, angle):
+    def __init__(self, x, y, angle,owner = 'player', damage = 0):
         super().__init__()
         self.image =pygame.image.load("src\sprites\FX\Preview\Smoke7.gif").convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, BULLET_SCALE)
@@ -566,6 +591,7 @@ class Bullet(pyg.sprite.Sprite):
         self.rect.center = (x,y)
         self.x = x
         self.y = y 
+        self.owner = owner ## 'player' or 'enemy'
         
         self.speed = BULLET_SPEED
         self.angle = angle
@@ -574,6 +600,7 @@ class Bullet(pyg.sprite.Sprite):
 
         self.bullet_lifetime = BULLET_LIFETIME
         self.spawn_time = pyg.time.get_ticks()
+        self.dmg = damage
     
     def bullet_movement(self):
         self.x += self.x_vel
@@ -588,11 +615,18 @@ class Bullet(pyg.sprite.Sprite):
             #print("bullet dead")
 
     def collisions(self):
-        hits = pyg.sprite.groupcollide(enemy_group, bullet_group, False, True, hitbox_collide)
+        if self.owner == 'player':
+            hits = pyg.sprite.groupcollide(enemy_group, bullet_group, False, True, hitbox_collide)
 
-        for hit in hits:
-            if hit.isDead == False:
-                hit.health -= 10
+            for hit in hits:
+                if hit.isDead == False:
+                    hit.health -= self.dmg
+        else:
+            hits = pyg.sprite.groupcollide(player_group, bullet_group, False, True, hitbox_collide)
+
+            for hit in hits:
+                if hit.isDead == False:
+                    hit.health -= self.dmg
                 
 
             
@@ -818,8 +852,6 @@ class Gamelevel(pyg.sprite.Group):
                 self.number_of_Y_tiles += 1
                 self.next_tile_x = 0
                 self.next_tile_y += 894
-                #print("NEWLINE")
-            #print(f"Current Tile: X:{self.number_of_X_tiles},Y:{self.number_of_Y_tiles} Max Tiles: {self.number_of_tiles_max}\n Next Tile Location: {self.next_tile_x}, {self.next_tile_y}")
 
     def spawn_enemies(self):
         
