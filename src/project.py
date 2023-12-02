@@ -92,6 +92,7 @@ class Player(pyg.sprite.Sprite):
         self.attack = False
         self.attack_cooldown = 100
         self.attack_offset = pyg.math.Vector2(ATTACK_OFFSET_X, ATTACK_OFFSET_Y)
+        self.targetlocation = pyg.math.Vector2(ATTACK_OFFSET_X, ATTACK_OFFSET_Y)
         
         #MOVE Variables
         self.velocity_x = 0
@@ -200,14 +201,15 @@ class Player(pyg.sprite.Sprite):
                 self.velocity_x /= math.sqrt(2)
                 self.velocity_y /= math.sqrt(2)
 
-            if pyg.mouse.get_pressed() == (1,0, 0) or keys[pyg.K_SPACE]:
+            if (pyg.mouse.get_pressed() == (1,0, 0) or keys[pyg.K_SPACE]) and DEBUG == True:
                 self.attack = True
                 self.idletick = 0
                 #print(self.angle)
                 self.is_attacking()
             else:
                 self.attack = False
-
+            if self.idletick > 60 and (keys[pyg.K_w] or keys[pyg.K_a] or keys[pyg.K_s] or keys[pyg.K_d]) == False:
+                self.get_closeset_Target()
     def is_idle(self):
         if self.idletick < 500:
             self.idletick += 1
@@ -221,6 +223,50 @@ class Player(pyg.sprite.Sprite):
             self.currentFrame = 0
             self.currentActionState = ACTIONSTATE
             self.currentAction = self.actions[ACTIONSTATE]
+
+    def get_closeset_Target(self):
+        closest_BadGuyVect = (0,0)
+        Closest_Distance = 5000000.0
+        player_vector = pyg.math.Vector2(self.rect.center)
+        if self.attack_cooldown <=0:
+            for badguy in enemy_group:
+                try:
+                    print(enemy_group)
+                    if  badguy.isDead == False and badguy.rect.center != ValueError:
+                        enemy_vector = pyg.math.Vector2(badguy.rect.center)
+                        try:
+                            Distance = (player_vector -  enemy_vector).magnitude()
+                        except:
+                            print("Taraget find fail")
+                        if Distance < Closest_Distance:
+                            Closest_Distance = Distance
+                            closest_BadGuyVect = enemy_vector
+                except:
+                    pass
+                dx = player_vector[0] - enemy_vector[0]
+                dy = enemy_vector[1] - player_vector[1]
+                rads = math.atan2(-dy,dx)
+                rads %= 2 * math.pi
+                self.angle = math.degrees(rads) -180
+                if int(Closest_Distance) < 500:
+                    self.autoAttack()
+
+            
+    def autoAttack(self):
+        if self.attack_cooldown <=0:
+            self.update_action(2)         
+            spawn_bullet_pos = list(self.vec_pos)            
+            if self.flipped == False:
+                spawn_bullet_pos[0] = self.vec_pos[0] + self.attack_offset[0]
+                spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
+            else:
+                spawn_bullet_pos[0] = self.vec_pos[0] - self.attack_offset[0]
+                spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
+            print(self.angle)
+            self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, owner=0, damage=self.dmg)
+            Player_bullet_group.add(self.bullet)
+            all_sprites_group.add(self.bullet)
+        self.attack_cooldown = ATTACK_COOLDOWN
 
     def is_attacking(self):
             
@@ -283,6 +329,8 @@ class Player(pyg.sprite.Sprite):
         self.player_facing()
 
         if self.attack_cooldown > 0:
+            if self.attack_cooldown > ATTACK_COOLDOWN:
+                self.attack_cooldown = ATTACK_COOLDOWN
             self.attack_cooldown -= 1
 
 
@@ -424,6 +472,7 @@ class Enemy(pyg.sprite.Sprite):
         if self.health <=0:
             self.isDead = True
             self.update_action(4)
+            self.remove(enemy_group)
 
     def is_attacking(self, EnemyVect, PlayerVect):
             spawn_bullet_pos = list(self.position)
@@ -627,14 +676,12 @@ class Bullet(pyg.sprite.Sprite):
             for hit in hits:
                 if hit.isDead == False:
                     hit.health -= self.dmg
-                    print(hit.name)
         else:
             hits = pyg.sprite.groupcollide(player_group, Enemy_bullet_group, False, True, hitbox_collide)
 
             for hit in hits:
                 if hit.isDead == False:
                     player.get_dmg(self.dmg)
-                    print(hit.name)
                     
                 
 
@@ -900,16 +947,19 @@ class Gamelevel(pyg.sprite.Group):
 
 
 class Button():
-    def __init__(self, Xpos, Ypos, img=pyg.image.load("src\sprites\Buttons\Button-Start.png"),function = 0):
-        self.img = img
+    def __init__(self, Xpos, Ypos, img=rf"src\sprites\Buttons\Button-Start.png",function = 0):
+        self.img = pyg.image.load(img)
         self.rect = self.img.get_rect()
-        self.rect.topleft =(Xpos,Ypos)
+        self.pos = (Xpos, Ypos)
+        self.rect.centerx =self.pos[0]
+        self.rect.centery =self.pos[1]
         self.isClicked=False
         self.buttonFunction = ["Start","Quit","Restart","Main Menu"]
         self.assignedFunction = function
     
+    
     def update(self):
-        screen.blit(self.img, (self.rect.x, self.rect.y))
+        screen.blit(self.img, self.pos)
 
     def _Function(self):
         if self.buttonFunction[self.assignedFunction] == self.buttonFunction[0]:  ##Start Button
@@ -934,7 +984,8 @@ game_level = Gamelevel()
 
 
 def main():
-    B = Button(500,500,function=0)
+    Start_Button = Button((WIDTH//2)-200, HEIGHT//2-150, function=0)
+    Quit_Button = Button(WIDTH//2 -200, HEIGHT//2+200, img="src\sprites\Buttons\Button-Quit.png", function=1)
     
     
    
@@ -947,9 +998,12 @@ def main():
                     exit()
                 if event.type == pyg.MOUSEBUTTONDOWN:
                     mouseLoc = pyg.mouse.get_pos()     
-                    if B.rect.collidepoint(mouseLoc):
-                        B._Function()
-            B.update()
+                    if Start_Button.rect.collidepoint(mouseLoc):
+                        Start_Button._Function()
+                    if Quit_Button.rect.collidepoint(mouseLoc):
+                        Quit_Button._Function()
+            Start_Button.update()
+            Quit_Button.update()
             pyg.display.update()
 
 
@@ -960,15 +1014,16 @@ def main():
                 if event.type == pyg.QUIT:
                     pyg.quit()
                     exit()
-                if event.type == pyg.KEYDOWN:
+                if event.type == pyg.KEYDOWN:  ## Pause Game
                     if event.key == pyg.K_ESCAPE:
                         print("PAUSED")
                         ui.Current_State=2 ## Pause Game
-                    if event.key == pyg.K_F1:
-                        print("F1")
-                        ui.debugTXT = f"Spawn Test Bad guy at: {player.pos[0]+600,player.pos[1]+600}"
-                        ui.debugtimerbool = True
-                        Testbadguy = Enemy(MinDist= 200, position=(player.pos[0]+600,player.pos[1]+600))
+                    if DEBUG == True:
+                        if event.key == pyg.K_F1:
+                            print("F1")
+                            ui.debugTXT = f"Spawn Test Bad guy at: {player.pos[0]+600,player.pos[1]+600}"
+                            ui.debugtimerbool = True
+                            Testbadguy = Enemy(MinDist= 200, position=(player.pos[0]+600,player.pos[1]+600))
                 if event.type == pyg.KEYUP:
                     pass
 
