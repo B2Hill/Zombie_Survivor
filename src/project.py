@@ -5,6 +5,8 @@ import math
 import json
 import random
 
+##from pygame.sprite import _Group
+
 from settings import *
 from spritesheet import *
 
@@ -33,6 +35,7 @@ enemy_group_dead = pyg.sprite.Group()
 obstacles_group = pygame.sprite.Group()
 player_group = pyg.sprite.Group()
 Button_Group = pyg.sprite.Group()
+enviroment_group = pyg.sprite.Group()
 
 #Collider
 def hitbox_collide(sprite1, sprite2):
@@ -540,10 +543,8 @@ class Enemy(pyg.sprite.Sprite):
 
         if (distance > self.max_distance):
             self.isDead = True
+            self.xp_given = True
            
-            
-
-        
         self.velocity = self.direction * self.movement_speed
         self.position += self.velocity
 
@@ -637,7 +638,8 @@ class Enemy(pyg.sprite.Sprite):
             self.update_frame()
             if self.isDead == False:
                 if self.get_vector_distance(pyg.math.Vector2(player.hitbox_rect.center), pygame.math.Vector2(self.hitbox_rect.center)) < 100:
-                    self.player_collision()     
+                    self.player_collision()
+                    
                 self.is_idle()
                 self.hunt_player()
                 self.flip_image()
@@ -647,6 +649,7 @@ class Enemy(pyg.sprite.Sprite):
                 if self.xp_given == False:
                     player.xp += self.xp
                     self.xp_given = True
+                    print(f'{self.name}: Gave {self.xp}.')
                 if self.deathtrigger == False:
                     self.idletick = 0
                     enemy_group.remove(self)
@@ -657,19 +660,13 @@ class Enemy(pyg.sprite.Sprite):
                 if self.idletick < 500:
                     self.idletick += 1
                 else:
-                    enemy_group_dead.remove(self)
                     self.kill()
             
-
-            
-
-
-
 #Bullet Class
 class Bullet(pyg.sprite.Sprite):
     def __init__(self, x, y, angle,owner = 0, damage = 0):
         super().__init__()
-        self.image =pygame.image.load("src\sprites\FX\Preview\Smoke7.gif").convert_alpha()
+        self.image =pygame.image.load("src\sprites\FX\Bullet.png").convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, BULLET_SCALE)
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)
@@ -766,7 +763,6 @@ class UI():
             self.current_color = GREEN
         elif self.current_health >= self.max_health * .25:
             pyg.draw.rect(screen, YELLOW, (10,15, (self.current_health/self.max_health)*100 * 3, 20))#YELLOW
-            print((self.current_health/self.max_health)*100 * 3)
             self.current_color = YELLOW
         elif self.current_health >= 0:
             pyg.draw.rect(screen, RED, (10, 15, (self.current_health/self.max_health)*100 * 3, 20))#RED
@@ -853,10 +849,55 @@ class UI():
             self.display_Debug_txt()
             self.Current_State = 3
             
+class enviroment(pyg.sprite.Sprite):
+    def __init__(self, x, y, name='Tree'):## Name = Tree, DeadTree, Stump
+        super().__init__(enviroment_group, background_group)
+        
+        self.name = name
+        self.image = pyg.image.load('src\sprites\Enviroment\stump.png').convert()
+        self.get_IMG(self.name)
+        self.pos = (x,y)
+        self.distance_from_player = 0
+        self.isDead = False
+        self.ismoving = False
 
+        self.rect = self.image.get_rect(center = self.pos)
+
+    def get_IMG(self, name):
+        if name.lower() == "tree" or "stump" or "deadtree":  ## add more for additional assets
+            self.image = pyg.transform.rotozoom(pyg.image.load(f'src\sprites\Enviroment\{name}.png').convert_alpha(), 0, PLAYER_SIZE)
+        else:  
+            self.image = pyg.image.load(f'src\sprites\Enviroment\stump.png').convert()
+            print("ERROR: IMG failed to load || check:  src\sprites\Enviroment\{name}.png")
+
+    def get_distance(self, Vect_1, Vect_2, XYAbs):
+        var = 0.0
+        if XYAbs == 0:
+            var = (Vect_1[0] - Vect_2[0])
+            return var
+        elif XYAbs == 1:
+            var = (Vect_1[1] - Vect_2[1])
+            return var
+        else:
+            var = (Vect_1 - Vect_2).magnitude()
+            #print(var)
+            return var
+        
+    def update_distance(self):
+        player_vector = pyg.math.Vector2(player.rect.center)
+        Tile_vector = pyg.math.Vector2(self.rect.center)
+        distance_from_player = self.get_distance(player_vector, Tile_vector, 99)##Absolute Value
+
+        #print(self.distance_from_player)
+        if distance_from_player > 8000.0:
+            #print("Too Far")
+            self.kill()
+            
+    def update(self):
+        self.update_distance()
     
 class tile(pyg.sprite.Sprite):
-    def __init__(self, size = (T_WIDTH, T_HEIGHT), IMG = 'src/background/Dirt_Background.jpg', pos = (0,0)):
+    def __init__(self, size = (T_WIDTH, T_HEIGHT), IMG = 'src/background/Dirt_Background.png', pos = (0,0)):
         super().__init__(background_group)
         self.tile_size = size
         self.image = pyg.image.load(rf'{IMG}').convert()
@@ -867,6 +908,7 @@ class tile(pyg.sprite.Sprite):
         self.movecheck = False
 
         self.rect = self.image.get_rect(center = self.tile_pos)
+        self.spawn_eviroment()
 
     def get_distance(self, Vect_1, Vect_2, XYAbs):
         var = 0.0
@@ -908,26 +950,51 @@ class tile(pyg.sprite.Sprite):
                 TMP_Tuple = list(self.tile_pos)
                 TMP_Tuple[0] = self.tile_pos[0] + 894 * game_level.max_X_Tiles
                 self.tile_pos = TMP_Tuple
+
             elif self.distance_from_playerX < -2000 and player.velocity_x < 0:
                 TMP_Tuple = list(self.tile_pos)
                 TMP_Tuple[0] = self.tile_pos[0] - 894 * game_level.max_X_Tiles
                 self.tile_pos = TMP_Tuple
+
             if self.distance_from_playerY > 2000 and player.velocity_y > 0:
                 TMP_Tuple = list(self.tile_pos)
                 TMP_Tuple[1] = self.tile_pos[1] + 894 * game_level.max_Y_tiles
                 self.tile_pos = TMP_Tuple
+
             elif self.distance_from_playerY < -1800 and player.velocity_y < 0:
                 TMP_Tuple = list(self.tile_pos)
                 TMP_Tuple[1] = self.tile_pos[1] - 894 * game_level.max_Y_tiles
                 self.tile_pos = TMP_Tuple
+
             self.update_tile_pos(self.tile_pos)
             self.isDead = False
+            
 
     def update(self):
         self.is_moving()
         self.update_distance()
         self.move_tile()
-        
+        self.spawn_eviroment()
+    
+    def spawn_eviroment(self):
+        NumberofObjects = random.randrange(4,8)
+        CurrentNumberofObjects = 0
+        if pyg.sprite.spritecollideany(self, enviroment_group) == None:
+            while CurrentNumberofObjects < NumberofObjects:
+                Object_posX = random.randrange(-417,417)
+                Object_posY = random.randrange(-380,380)
+
+                Enviromenttypes = ['Tree', 'DeadTree', 'Stump']
+
+                Object_posX += self.rect.center[0]
+                Object_posY += self.rect.center[1]
+                EnviromentObject = enviroment(Object_posX, Object_posY,random.choice(Enviromenttypes))
+
+                CurrentNumberofObjects += 1
+
+
+
+
 
 class Gamelevel(pyg.sprite.Group):
     def __init__(self):

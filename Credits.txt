@@ -1,12 +1,22 @@
 Momonga - Sprites
     Soldiers
+        https://momongaa.itch.io/ww2-soldiers-character-sprite-pack
 
 Craftpix.net - Sprites
-    Civilians
+    Homeless Character Pack
+        https://free-game-assets.itch.io/homeless-character-pixel-art-pack
 IronnButterfly - Sprites
-    Player Zombie
+    Zombie - simple, becomes projectile
+        https://ironnbutterfly.itch.io/zombie-sprite
 RagnaPixel
-    FX/Particles
+    Particle FX Smoke
+        https://ragnapixel.itch.io/particle-fx-smoke
+
+Stealhix - Tileset
+    RPG Nature Tileset
+    RPG Nature Tileset Snow
+    RPG Nature Tileset Autumn
+        https://stealthix.itch.io/rpg-nature-tileset
 
 
 Code Tutorial :
