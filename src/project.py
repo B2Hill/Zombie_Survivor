@@ -218,6 +218,28 @@ class Player(pyg.sprite.Sprite):
             self.update_action(0)
         #print(self.idletick)
 
+    def reset(self):
+        #Attack Variables
+        self.attack = False
+        self.attack_cooldown = 100
+        
+        #MOVE Variables
+        self.velocity_x = 0
+        self.velocity_y = 0
+        #Hitbox Variables
+        self.hitbox_rect = self.image.get_rect(center = self.pos)
+        self.rect = self.hitbox_rect.copy()
+        self.flipped = False
+
+        #idle Var
+        self.idletick = 0
+
+        #player stats
+        self.health = 100
+        self.xp = 0
+        self.dmg = 10
+        self.isDead = False
+
     def update_action(self,ACTIONSTATE):
         if ACTIONSTATE != self.currentActionState:
             #print(f"ACTIONSTATE CHANGE: \n {self.actions[self.currentActionState]} to {self.actions[ACTIONSTATE]}")
@@ -700,6 +722,7 @@ class UI():
         self.health_ratio = self.max_health / self.bar_lenth
         self.current_color = None
         self.time = 0
+        self.lastroundtime = 0
 
         #DEBUG INFO
         self.debugtimer = DEBUG_TIMER
@@ -762,7 +785,7 @@ class UI():
         
     
     def update_time(self, time):
-        self.time = time
+        self.time = time - self.lastroundtime
 
     def update(self):
         if player.isDead == False:
@@ -828,11 +851,11 @@ class tile(pyg.sprite.Sprite):
         else:
             self.ismoving = False
 
-    def move_tile(self):
+    def move_tile(self,resetbool = False):
         if math.fabs(self.distance_from_playerX) > self.tile_size[0]*2 or math.fabs(self.distance_from_playerY) > self.tile_size[1]*2:
             if self.isDead == False:
                 self.isDead = True
-        if self.isDead and self.ismoving == True:
+        if self.isDead and (self.ismoving or resetbool) == True:
             if self.distance_from_playerX > 2000 and player.velocity_x > 0:
                 TMP_Tuple = list(self.tile_pos)
                 TMP_Tuple[0] = self.tile_pos[0] + 894 * game_level.max_X_Tiles
@@ -885,9 +908,6 @@ class Gamelevel(pyg.sprite.Group):
         self.create_map()
         self.spawn_timer = 0
 
-    def move_tiles(self):
-        for items in background_group:
-            pass
 
     def create_map(self):
         #self.spawn_hp_pots()
@@ -979,6 +999,25 @@ class Button(pyg.sprite.Sprite):
             ui.Current_State = 0
             pass
     def ResetGame(self):
+        for enemy in enemy_group:
+                print(f"enemy {enemy} cleaned up")
+                enemy.isDead = True
+                enemy.xp_given = True
+                enemy.update()
+                enemy.kill()
+        for bullet in Player_bullet_group:
+            Player_bullet_group.remove(bullet)
+            bullet.kill()
+        for bullet in Enemy_bullet_group:
+            Enemy_bullet_group.remove(bullet)
+            bullet.kill()
+        player.reset()
+        ui.current_health = player.health
+        ui.update_time(pyg.time.get_ticks())
+        ui.lastroundtime = ui.time
+        
+
+        print("Reset")
         #TODO
         pass
 class Menu():
@@ -997,7 +1036,8 @@ game_level = Gamelevel()
 def main():
     Start_Button = Button((WIDTH//2)-200, HEIGHT//2-150, function=0)
     Quit_Button = Button(WIDTH//2 -200, HEIGHT//2+200, img="src\sprites\Buttons\Button-Quit.png", function=1)
-
+    Restart_Button = Button(WIDTH//2 -200, HEIGHT//2+200, img="src\sprites\Buttons\Button-Restart.png", function=2)
+    clock.tick(FPS)
     
     
     
@@ -1010,10 +1050,7 @@ def main():
                 if event.type == pyg.QUIT:
                     pyg.quit()
                     exit()
-                   
-     
                 if Start_Button.rect.collidepoint(mouseLoc):
-                    print(clock)
                     if event.type == pyg.MOUSEBUTTONDOWN:
                         Start_Button._Function()
                 if Quit_Button.rect.collidepoint(mouseLoc):
@@ -1023,7 +1060,7 @@ def main():
             Start_Button.update()
             Quit_Button.update()
             pyg.display.update()
-            clock.tick(FPS)
+            
 
         while ui.Game_state[ui.Current_State] == ui.Game_state[1]:  ##Playing State
             ui.update_time(pyg.time.get_ticks())
@@ -1068,14 +1105,21 @@ def main():
 
         while ui.Game_state[ui.Current_State] == ui.Game_state[3]:  ##Game Over
             keys = pyg.key.get_pressed()
+            mouseLoc = pyg.mouse.get_pos() 
             for event in pyg.event.get():
                 if event.type == pyg.QUIT:
                     pyg.quit()
                     exit()
-            for enemy in enemy_group:
-                enemy.isDead = True
-                enemy.xp_given = True
-                enemy.update()
+                if Restart_Button.rect.collidepoint(mouseLoc):
+                    if event.type == pyg.MOUSEBUTTONDOWN:
+                        Restart_Button._Function()
+
+            
+            
+                
+            Restart_Button.update()
+            pyg.display.update()
+                
 
         
         
