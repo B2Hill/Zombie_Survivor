@@ -31,6 +31,7 @@ Enemy_bullet_group = pyg.sprite.Group()
 enemy_group = pyg.sprite.Group()
 obstacles_group = pygame.sprite.Group()
 player_group = pyg.sprite.Group()
+Button_Group = pyg.sprite.Group()
 
 #Collider
 def hitbox_collide(sprite1, sprite2):
@@ -231,7 +232,6 @@ class Player(pyg.sprite.Sprite):
         if self.attack_cooldown <=0:
             for badguy in enemy_group:
                 try:
-                    print(enemy_group)
                     if  badguy.isDead == False and badguy.rect.center != ValueError:
                         enemy_vector = pyg.math.Vector2(badguy.rect.center)
                         try:
@@ -262,7 +262,6 @@ class Player(pyg.sprite.Sprite):
             else:
                 spawn_bullet_pos[0] = self.vec_pos[0] - self.attack_offset[0]
                 spawn_bullet_pos[1] = self.vec_pos[1] + self.attack_offset[1]
-            print(self.angle)
             self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, owner=0, damage=self.dmg)
             Player_bullet_group.add(self.bullet)
             all_sprites_group.add(self.bullet)
@@ -562,29 +561,29 @@ class Enemy(pyg.sprite.Sprite):
                 if self.currentActionState == 0:  ##IDLE
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.idle)) 
                     self.image = self.idle[(self.currentFrame)]
-                    
+         #Walking load           
                 elif self.currentActionState == 1:  ##Walk
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.walk)) 
                     self.image = self.walk[(self.currentFrame)]
                     
-        #Walking load
+        #Attacking load
                 elif self.currentActionState == 2:  ##Attack
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.attack)) 
                     self.image = self.attack[(self.currentFrame)]
 
                     
-        #Attacking load
+        #Hurting load
                 elif self.currentActionState == 3: ##Hurt
                     self.currentFrame = ((self.currentFrame + 1)) % (len(self.hurt)) 
                     self.image = self.hurt[(self.currentFrame)]
                     
-        #Hurting load
+        #Dying load
                 elif self.currentActionState == 4: ##Die
                     if self.currentFrame < len(self.die)-1:
                         self.currentFrame = ((self.currentFrame + 1)) % (len(self.die)) 
                         self.image = self.die[(self.currentFrame)]
                     
-        #Dying load
+        ##Something wihen terribly wrong
                 else:
                     exit()
         else:
@@ -766,17 +765,22 @@ class UI():
         self.time = time
 
     def update(self):
-        self.display_HP_bar()
-        self.display_HP_txt()
-        self.display_timer()
-        self.display_wave_txt()
-        self.display_XP_txt()
-        if self.debugtimerbool:
-            self.Count_debug_timer()
-            
-        if self.debugtimer > 0 and self.debugtimerbool:
+        if player.isDead == False:
+            self.display_HP_bar()
+            self.display_HP_txt()
+            self.display_timer()
+            self.display_wave_txt()
+            self.display_XP_txt()
+            if self.debugtimerbool:
+                self.Count_debug_timer()
+                
+            if self.debugtimer > 0 and self.debugtimerbool:
+                self.display_Debug_txt()
+                print(f'{self.debugtimer} || {self.debugtimerbool}')
+        else:
+            self.debugTXT = "DEFEAT"
             self.display_Debug_txt()
-            print(f'{self.debugtimer} || {self.debugtimerbool}')
+            self.Current_State = 3
             
 
     
@@ -946,30 +950,37 @@ class Gamelevel(pyg.sprite.Group):
 
 
 
-class Button():
+class Button(pyg.sprite.Sprite):
     def __init__(self, Xpos, Ypos, img=rf"src\sprites\Buttons\Button-Start.png",function = 0):
         self.img = pyg.image.load(img)
         self.rect = self.img.get_rect()
         self.pos = (Xpos, Ypos)
-        self.rect.centerx =self.pos[0]
-        self.rect.centery =self.pos[1]
+        self.rect.topleft =self.pos
         self.isClicked=False
         self.buttonFunction = ["Start","Quit","Restart","Main Menu"]
         self.assignedFunction = function
-    
-    
+            
     def update(self):
         screen.blit(self.img, self.pos)
+        if DEBUG == True:
+            pyg.draw.rect(screen, RED, self.rect, width = 2)
 
     def _Function(self):
         if self.buttonFunction[self.assignedFunction] == self.buttonFunction[0]:  ##Start Button
             ui.Current_State = 1
-        if self.buttonFunction[self.assignedFunction] == self.buttonFunction[1]:  ##Quit Button
+        elif self.buttonFunction[self.assignedFunction] == self.buttonFunction[1]:  ##Quit Button
             quit()
-        if self.buttonFunction[self.assignedFunction] == self.buttonFunction[2]:  ##Restart Button
+        elif self.buttonFunction[self.assignedFunction] == self.buttonFunction[2]:  ##Restart Button
+            self.ResetGame()
+            ui.Current_State = 1
             pass
-        if self.buttonFunction[self.assignedFunction] == self.buttonFunction[0]:  ##Main Menu Button
+        elif self.buttonFunction[self.assignedFunction] == self.buttonFunction[0]:  ##Main Menu Button
+            self.ResetGame()
+            ui.Current_State = 0
             pass
+    def ResetGame(self):
+        #TODO
+        pass
 class Menu():
     pass
 
@@ -986,26 +997,33 @@ game_level = Gamelevel()
 def main():
     Start_Button = Button((WIDTH//2)-200, HEIGHT//2-150, function=0)
     Quit_Button = Button(WIDTH//2 -200, HEIGHT//2+200, img="src\sprites\Buttons\Button-Quit.png", function=1)
+
+    
     
     
    
     while True:
         while ui.Game_state[ui.Current_State] == ui.Game_state[0]:  ## Main Menu state
             keys = pyg.key.get_pressed()
+            mouseLoc = pyg.mouse.get_pos() 
             for event in pyg.event.get():
                 if event.type == pyg.QUIT:
                     pyg.quit()
                     exit()
-                if event.type == pyg.MOUSEBUTTONDOWN:
-                    mouseLoc = pyg.mouse.get_pos()     
-                    if Start_Button.rect.collidepoint(mouseLoc):
+                   
+     
+                if Start_Button.rect.collidepoint(mouseLoc):
+                    print(clock)
+                    if event.type == pyg.MOUSEBUTTONDOWN:
                         Start_Button._Function()
-                    if Quit_Button.rect.collidepoint(mouseLoc):
+                if Quit_Button.rect.collidepoint(mouseLoc):
+                    if event.type == pyg.MOUSEBUTTONDOWN:
                         Quit_Button._Function()
+
             Start_Button.update()
             Quit_Button.update()
             pyg.display.update()
-
+            clock.tick(FPS)
 
         while ui.Game_state[ui.Current_State] == ui.Game_state[1]:  ##Playing State
             ui.update_time(pyg.time.get_ticks())
@@ -1046,15 +1064,18 @@ def main():
                     exit()
                 if event.type == pyg.KEYDOWN:
                     if event.key == pyg.K_ESCAPE:
-                        print("UnPuased")
                         ui.Current_State=1 ## Unpause Game
 
-        while ui.Game_state[ui.Current_State] == ui.Game_state[3]:  ##paused State
+        while ui.Game_state[ui.Current_State] == ui.Game_state[3]:  ##Game Over
             keys = pyg.key.get_pressed()
             for event in pyg.event.get():
                 if event.type == pyg.QUIT:
                     pyg.quit()
                     exit()
+            for enemy in enemy_group:
+                enemy.isDead = True
+                enemy.xp_given = True
+                enemy.update()
 
         
         
@@ -1064,7 +1085,7 @@ def main():
 
         #Update Display
         
-        clock.tick(FPS)
+        
 
 if __name__ == "__main__":
     main()
