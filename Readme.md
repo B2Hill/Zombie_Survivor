@@ -53,7 +53,7 @@ For future itterations on this, another pass at the attack system can be done al
     Craftpix.net
         https://free-game-assets.itch.io/homeless-character-pixel-art-pack
 ### Zombie - simple, becomes projectile
-    IronnButterfly - Sprites
+    IronnButterfly
         https://ironnbutterfly.itch.io/zombie-sprite
 ### Particle FX Smoke
     RagnaPixel
