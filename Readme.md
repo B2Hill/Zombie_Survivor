@@ -42,7 +42,7 @@ The Button class implements the clickable button system for the menu's in game. 
 ## Challenges:
 The major challenge within the entire project was time constants. Everything from following the base tutorial I used to gathering the assets took far more time to change and implement than I believed would take. This coupled with having limited time to dedicate to the required me to reduce the scope down to the key elements and ensure the systems for expansion get built, while still using placeholder assets.
 ## Future Improvements:
-For future itterations on this, another pass at the attack system can be done along with having it as its own class to allow for faster exspansion on abilibites to reduce development time on getting diffrent abilibites to function without causing lag. I would also finish out the diffrent png's and json files for the diffrent assets.
+For future itterations on this, another pass at the attack system can be done along with having it as its own class to allow for faster exspansion on abilibites to reduce development time on getting diffrent abilibites to function without causing lag. I would also finish out the diffrent png's and json files for the diffrent assets.I would also split out the diffrent major classes into diffrent py files to reduce the bloat on the main project file
 
 ## Credits
 ### Soldiers
