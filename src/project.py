@@ -206,7 +206,7 @@ class Player(pyg.sprite.Sprite):
                 self.velocity_x /= math.sqrt(2)
                 self.velocity_y /= math.sqrt(2)
 
-            if (pyg.mouse.get_pressed() == (1,0, 0) or keys[pyg.K_SPACE]) and DEBUG == True:
+            if (pyg.mouse.get_pressed() == (1,0, 0) or keys[pyg.K_SPACE]):
                 self.attack = True
                 self.idletick = 0
                 #print(self.angle)
@@ -244,6 +244,8 @@ class Player(pyg.sprite.Sprite):
         self.xp = 0
         self.dmg = 10
         self.isDead = False
+
+        game_level.difficulty = 8
 
     def update_action(self,ACTIONSTATE):
         if ACTIONSTATE != self.currentActionState:
