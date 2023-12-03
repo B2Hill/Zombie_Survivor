@@ -3,7 +3,7 @@ import pygame
 # Game Setup
 WIDTH = 1920
 HEIGHT = 1080
-DEBUG = True
+DEBUG = False
 DEBUG_TIMER = 300
 FPS = 30
 RENDER_DISTANCE = 3

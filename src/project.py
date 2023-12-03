@@ -1007,11 +1007,9 @@ class Button(pyg.sprite.Sprite):
         elif self.buttonFunction[self.assignedFunction] == self.buttonFunction[2]:  ##Restart Button
             self.ResetGame()
             ui.Current_State = 1
-            pass
-        elif self.buttonFunction[self.assignedFunction] == self.buttonFunction[0]:  ##Main Menu Button
+        elif self.buttonFunction[self.assignedFunction] == self.buttonFunction[3]:  ##Main Menu Button
             self.ResetGame()
             ui.Current_State = 0
-            pass
     def ResetGame(self):
         for enemy in enemy_group:
             enemy.isDead = True
@@ -1035,27 +1033,20 @@ class Button(pyg.sprite.Sprite):
         ui.max_health = 100
         game_level.num_of_enemies_spawned = 0
 
-
-        print("Reset")
-        #TODO
-        pass
 class Menu():
     pass
-
 
 player = Player()
 #Testbadguy = Enemy(MinDist= 200, position=(600,600))
 ui = UI()
 game_level = Gamelevel()
 
-
-
-
-
 def main():
     Start_Button = Button((WIDTH//2)-200, HEIGHT//2-150, function=0)
-    Quit_Button = Button(WIDTH//2 -200, HEIGHT//2+200, img="src\sprites\Buttons\Button-Quit.png", function=1)
-    Restart_Button = Button(WIDTH//2 -200, HEIGHT//2+200, img="src\sprites\Buttons\Button-Restart.png", function=2)
+    Quit_Button_1 = Button(WIDTH//2 -200, HEIGHT//2+200, img="src\sprites\Buttons\Button-Quit.png", function=1)
+    Restart_Button = Button(100, HEIGHT//2+200, img="src\sprites\Buttons\Button-Restart.png", function=2)
+    Quit_Button_2 = Button(WIDTH//2 +400, HEIGHT//2+200, img="src\sprites\Buttons\Button-Quit.png", function=1)
+    Menu_Button_2 = Button(WIDTH//2-200, HEIGHT//2, img="src\sprites\Buttons\Button-MainMenu.png", function=3)
     clock.tick(FPS)
     
     
@@ -1072,12 +1063,12 @@ def main():
                 if Start_Button.rect.collidepoint(mouseLoc):
                     if event.type == pyg.MOUSEBUTTONDOWN:
                         Start_Button._Function()
-                if Quit_Button.rect.collidepoint(mouseLoc):
+                if Quit_Button_1.rect.collidepoint(mouseLoc):
                     if event.type == pyg.MOUSEBUTTONDOWN:
-                        Quit_Button._Function()
-
+                        Quit_Button_1._Function()
+            screen.fill('black')
             Start_Button.update()
-            Quit_Button.update()
+            Quit_Button_1.update()
             pyg.display.update()
             
 
@@ -1132,23 +1123,16 @@ def main():
                 if Restart_Button.rect.collidepoint(mouseLoc):
                     if event.type == pyg.MOUSEBUTTONDOWN:
                         Restart_Button._Function()
-
-            
-            
-                
+                if Quit_Button_2.rect.collidepoint(mouseLoc):
+                    if event.type == pyg.MOUSEBUTTONDOWN:
+                        Quit_Button_2._Function()
+                if Menu_Button_2.rect.collidepoint(mouseLoc):
+                    if event.type == pyg.MOUSEBUTTONDOWN:
+                        Menu_Button_2._Function()
+            Menu_Button_2.update()
             Restart_Button.update()
+            Quit_Button_2.update()
             pyg.display.update()
-                
-
-        
-        
-
-        #Debug Hitrects
-        
-
-        #Update Display
-        
-        
 
 if __name__ == "__main__":
     main()
