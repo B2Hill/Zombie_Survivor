@@ -13,6 +13,9 @@ PLAYER_START_X = WIDTH // 2
 PLAYER_START_Y = HEIGHT // 2
 PLAYER_SIZE = 2
 PLAYER_SPEED = 5
+XP_MULTI = 1.3
+BASE_LEVEL_XP = 100
+
 
 
 #Attack Settings
@@ -52,5 +55,7 @@ game_stats = {
     "current_wave": 1, 
     "number_of_enemies": [5, 6,7], 
     "wave_cooldown": 6000, 
-    "num_health_potions": 3
+    "num_health_potions": 3,
+    "Current_Level" : 0,
+
 }

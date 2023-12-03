@@ -730,6 +730,7 @@ class UI():
         self.current_color = None
         self.time = 0
         self.lastroundtime = 0
+        self.LVL = 1
 
         #DEBUG INFO
         self.debugtimer = DEBUG_TIMER
@@ -759,10 +760,10 @@ class UI():
     def display_HP_bar(self):
         pyg.draw.rect(screen, BLACK, (10,15, self.bar_lenth * 3, 20)) #Black
 
-        if self.current_health >= 75:
+        if self.current_health >= self.max_health * .75:
             pyg.draw.rect(screen, GREEN, (10,15,self.current_health * 3, 20)) #Green
             self.current_color = GREEN
-        elif self.current_health >= 25:
+        elif self.current_health >= self.max_health * .25:
             pyg.draw.rect(screen, YELLOW, (10,15, self.current_health * 3, 20))#YELLOW
             self.current_color = YELLOW
         elif self.current_health >= 0:
@@ -781,16 +782,22 @@ class UI():
         XP_rect = XP_surface.get_rect(center = (1162 , 30))
         screen.blit(XP_surface, XP_rect)
     
-    def display_wave_txt(self):
-        wave_surface = font.render(f"wave: {game_stats['current_wave']}",False, GREEN)
-        wave_rect = wave_surface.get_rect(center = (745,28)) ### Set to Adjust with screen Size
-        screen.blit(wave_surface, wave_rect)
+    def display_Level_txt(self):
+        self.update_level()
+        Level_surface = font.render(f"Level: {self.LVL}",False, GREEN)
+        lvl_rect = Level_surface.get_rect(center = (745,28)) ### Set to Adjust with screen Size
+        screen.blit(Level_surface, lvl_rect)
 
     def display_timer(self):
         text_1 = font.render(f'{int(self.time / 1000)} Seconds', True, RED)
         screen.blit(text_1, (10, 50))
         
-    
+    def update_level(self):
+        self.NextLVL = (BASE_LEVEL_XP * 1.3) * (1 + .2 * self.LVL)
+        if player.xp >= self.NextLVL:
+            player.xp = 0
+            self.LVL += 1
+
     def update_time(self, time):
         self.time = time - self.lastroundtime
 
@@ -799,7 +806,7 @@ class UI():
             self.display_HP_bar()
             self.display_HP_txt()
             self.display_timer()
-            self.display_wave_txt()
+            self.display_Level_txt()
             self.display_XP_txt()
             if self.debugtimerbool:
                 self.Count_debug_timer()
@@ -1024,6 +1031,8 @@ class Button(pyg.sprite.Sprite):
         ui.current_health = player.health
         ui.update_time(pyg.time.get_ticks())
         ui.lastroundtime = ui.time + ui.lastroundtime
+        ui.LVL = 0
+        ui.max_health = 100
         game_level.num_of_enemies_spawned = 0
 
 
