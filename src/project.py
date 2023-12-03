@@ -649,7 +649,7 @@ class Enemy(pyg.sprite.Sprite):
                 if self.xp_given == False:
                     player.xp += self.xp
                     self.xp_given = True
-                    print(f'{self.name}: Gave {self.xp}.')
+                    #print(f'{self.name}: Gave {self.xp}.')
                 if self.deathtrigger == False:
                     self.idletick = 0
                     enemy_group.remove(self)
@@ -1209,12 +1209,12 @@ def main():
                         ui.Current_State=2 ## Pause Game
                     if DEBUG == True:
                         if event.key == pyg.K_F1:
-                            print("F1: Spawn Test baddie")
+                            #print("F1: Spawn Test baddie")
                             ui.debugTXT = f"Spawn Test Bad guy at: {player.pos[0]+600,player.pos[1]+600}"
                             ui.debugtimerbool = True
                             Testbadguy = Enemy(name= "Sold",  MinDist= 200, position=(player.pos[0]+600,player.pos[1]+600))
                         if event.key == pyg.K_F2:
-                            print("F2: Level up")
+                            #print("F2: Level up")
                             ui.debugTXT = f"granting 100xp"
                             ui.debugtimerbool = True
                             player.xp += 1000
