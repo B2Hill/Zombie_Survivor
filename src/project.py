@@ -29,6 +29,7 @@ all_sprites_group = pyg.sprite.Group()
 Player_bullet_group = pyg.sprite.Group()
 Enemy_bullet_group = pyg.sprite.Group()
 enemy_group = pyg.sprite.Group()
+enemy_group_dead = pyg.sprite.Group()
 obstacles_group = pygame.sprite.Group()
 player_group = pyg.sprite.Group()
 Button_Group = pyg.sprite.Group()
@@ -493,7 +494,6 @@ class Enemy(pyg.sprite.Sprite):
         if self.health <=0:
             self.isDead = True
             self.update_action(4)
-            self.remove(enemy_group)
 
     def is_attacking(self, EnemyVect, PlayerVect):
             spawn_bullet_pos = list(self.position)
@@ -628,31 +628,38 @@ class Enemy(pyg.sprite.Sprite):
                 self.isDead = True
                 self.xp = 0
 
-    def update(self):
-        self.check_alive()
-        self.update_frame()
-        if self.isDead == False:
-            if self.get_vector_distance(pyg.math.Vector2(player.hitbox_rect.center), pygame.math.Vector2(self.hitbox_rect.center)) < 100:
-                self.player_collision()     
-            self.is_idle()
-            self.hunt_player()
-            self.flip_image()
-        else: 
-            #random Chance to drop power up give player XP
-            #play death animation
-            if self.xp_given == False:
-                player.xp += self.xp
-                self.xp_given = True
-            if self.deathtrigger == False:
-                self.idletick = 0
-                enemy_group.remove(self)
-                self.deathtrigger = True
-                game_level.num_of_enemies_spawned -=1
-                game_level.difficulty +=.1
-            if self.idletick < 500:
-                self.idletick += 1
-            else:
+    def update(self,cleanup = False):
+        if cleanup == True:
                 self.kill()
+        else:
+            self.check_alive()
+            self.update_frame()
+            if self.isDead == False:
+                if self.get_vector_distance(pyg.math.Vector2(player.hitbox_rect.center), pygame.math.Vector2(self.hitbox_rect.center)) < 100:
+                    self.player_collision()     
+                self.is_idle()
+                self.hunt_player()
+                self.flip_image()
+            else: 
+                #random Chance to drop power up give player XP
+                #play death animation
+                if self.xp_given == False:
+                    player.xp += self.xp
+                    self.xp_given = True
+                if self.deathtrigger == False:
+                    self.idletick = 0
+                    enemy_group.remove(self)
+                    enemy_group_dead.add(self)
+                    self.deathtrigger = True
+                    game_level.num_of_enemies_spawned -=1
+                    game_level.difficulty +=.1
+                if self.idletick < 500:
+                    self.idletick += 1
+                else:
+                    enemy_group_dead.remove(self)
+                    self.kill()
+            
+
             
 
 
@@ -999,12 +1006,16 @@ class Button(pyg.sprite.Sprite):
             ui.Current_State = 0
             pass
     def ResetGame(self):
+        waittimer = 20000
+        x = 0
         for enemy in enemy_group:
-                print(f"enemy {enemy} cleaned up")
-                enemy.isDead = True
-                enemy.xp_given = True
-                enemy.update()
-                enemy.kill()
+            enemy.isDead = True
+            enemy.xp_given = True
+            enemy.update(True)
+        for enemy in enemy_group_dead:
+            enemy.isDead = True
+            enemy.xp_given = True
+            enemy.update(True)
         for bullet in Player_bullet_group:
             Player_bullet_group.remove(bullet)
             bullet.kill()
@@ -1015,7 +1026,7 @@ class Button(pyg.sprite.Sprite):
         ui.current_health = player.health
         ui.update_time(pyg.time.get_ticks())
         ui.lastroundtime = ui.time
-        
+
 
         print("Reset")
         #TODO
