@@ -1006,8 +1006,6 @@ class Button(pyg.sprite.Sprite):
             ui.Current_State = 0
             pass
     def ResetGame(self):
-        waittimer = 20000
-        x = 0
         for enemy in enemy_group:
             enemy.isDead = True
             enemy.xp_given = True
@@ -1025,7 +1023,8 @@ class Button(pyg.sprite.Sprite):
         player.reset()
         ui.current_health = player.health
         ui.update_time(pyg.time.get_ticks())
-        ui.lastroundtime = ui.time
+        ui.lastroundtime = ui.time + ui.lastroundtime
+        game_level.num_of_enemies_spawned = 0
 
 
         print("Reset")
