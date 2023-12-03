@@ -656,7 +656,8 @@ class Enemy(pyg.sprite.Sprite):
                     enemy_group_dead.add(self)
                     self.deathtrigger = True
                     game_level.num_of_enemies_spawned -=1
-                    game_level.difficulty +=.1
+                    game_level.difficulty +=.3
+                    game_level.number_of_enemiesMax = game_level.difficulty
                 if self.idletick < 500:
                     self.idletick += 1
                 else:
@@ -992,10 +993,6 @@ class tile(pyg.sprite.Sprite):
 
                 CurrentNumberofObjects += 1
 
-
-
-
-
 class Gamelevel(pyg.sprite.Group):
     def __init__(self):
         super().__init__()
@@ -1006,7 +1003,8 @@ class Gamelevel(pyg.sprite.Group):
         self.enemy_spawn_radius_min = SPAWN_MIN
         self.enemy_spawn_radius_max = SPAWN_MAX
         self.num_of_enemies_spawned = 0
-        self.difficulty = 0.0
+        self.number_of_enemiesMax = 8
+        self.difficulty = 8.0
         
         
         self.max_X_Tiles = 4
@@ -1029,7 +1027,9 @@ class Gamelevel(pyg.sprite.Group):
         self.spawn_enemies()
         self.create_tiles_INIT()
         pass
-    
+    def increaseDifficulty(self):
+        self.number_of_enemiesMax += self.difficulty
+
     def create_tiles_INIT(self):
         while self.number_of_Y_tiles < self.max_Y_tiles:
             if self.number_of_X_tiles < self.max_X_Tiles:
@@ -1043,11 +1043,9 @@ class Gamelevel(pyg.sprite.Group):
                 self.next_tile_y += 894
 
     def spawn_enemies(self):
-        
-        self.number_of_enemies = game_stats["number_of_enemies"][game_stats["current_wave"]-1]
         enemy_name = ["Civ", "Sold"]
         
-        while self.num_of_enemies_spawned < self.number_of_enemies:
+        while self.num_of_enemies_spawned <= self.number_of_enemiesMax:
             self.circle_center = player.hitbox_rect.center
             rand_angle = 2 * math.pi * random.random()
             r= random.randrange(self.enemy_spawn_radius_min, self.enemy_spawn_radius_max)
@@ -1082,8 +1080,6 @@ class Gamelevel(pyg.sprite.Group):
             for Bg in background_group:
                 background_rect = Bg.rect.copy().move(-self.offset.x, -self.offset.y)
                 pyg.draw.rect(screen, GREEN, background_rect, width=2)
-
-
 
 class Button(pyg.sprite.Sprite):
     def __init__(self, Xpos, Ypos, img=rf"src\sprites\Buttons\Button-Start.png",function = 0):
@@ -1150,17 +1146,11 @@ class Button(pyg.sprite.Sprite):
             pass
         ui.Current_State = 1
 
-class Menu():
-    pass
 
 player = Player()
 #Testbadguy = Enemy(MinDist= 200, position=(600,600))
 ui = UI()
 game_level = Gamelevel()
-
-
-
-
 
 def main():
     Start_Button = Button((WIDTH//2)-200, HEIGHT//2-150, function=0)
