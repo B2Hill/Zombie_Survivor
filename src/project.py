@@ -1,9 +1,9 @@
 from typing import Iterable, Union
 import pygame as pyg
 from sys import exit
-import math, json, random
-
-
+import math
+import json
+import random
 
 from settings import *
 from spritesheet import *
@@ -95,7 +95,7 @@ class Player(pyg.sprite.Sprite):
         self.attack_cooldown = 100
         self.attack_offset = pyg.math.Vector2(ATTACK_OFFSET_X, ATTACK_OFFSET_Y)
         self.targetlocation = pyg.math.Vector2(ATTACK_OFFSET_X, ATTACK_OFFSET_Y)
-        
+        self.Base_CD = ATTACK_COOLDOWN
         #MOVE Variables
         self.velocity_x = 0
         self.velocity_y = 0
@@ -223,6 +223,7 @@ class Player(pyg.sprite.Sprite):
         #Attack Variables
         self.attack = False
         self.attack_cooldown = 100
+        self.Base_CD = ATTACK_COOLDOWN
         
         #MOVE Variables
         self.velocity_x = 0
@@ -288,12 +289,12 @@ class Player(pyg.sprite.Sprite):
             self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle, owner=0, damage=self.dmg)
             Player_bullet_group.add(self.bullet)
             all_sprites_group.add(self.bullet)
-        self.attack_cooldown = ATTACK_COOLDOWN
+        self.attack_cooldown = self.Base_CD
 
     def is_attacking(self):
             
         self.update_action(2)
-        self.attack_cooldown = ATTACK_COOLDOWN
+        self.attack_cooldown = self.Base_CD
         spawn_bullet_pos = list(self.vec_pos)            
         if self.flipped == False:
             spawn_bullet_pos[0] = self.vec_pos[0] + self.attack_offset[0]
@@ -351,8 +352,8 @@ class Player(pyg.sprite.Sprite):
         self.player_facing()
 
         if self.attack_cooldown > 0:
-            if self.attack_cooldown > ATTACK_COOLDOWN:
-                self.attack_cooldown = ATTACK_COOLDOWN
+            if self.attack_cooldown > self.Base_CD:
+                self.attack_cooldown = self.Base_CD
             self.attack_cooldown -= 1
 
 
@@ -738,7 +739,7 @@ class UI():
         self.debugTXT = ""
 
         #Game States
-        self.Game_state = ["Main_Menu", "Playing", "Paused", "Game_Over","initalizing"]
+        self.Game_state = ["Main_Menu", "Playing", "Paused", "Game_Over","LevelUP"]
         self.Current_State = 0 ## Change this once the main menu is working
 
 
@@ -761,13 +762,14 @@ class UI():
         pyg.draw.rect(screen, BLACK, (10,15, self.bar_lenth * 3, 20)) #Black
 
         if self.current_health >= self.max_health * .75:
-            pyg.draw.rect(screen, GREEN, (10,15,self.current_health * 3, 20)) #Green
+            pyg.draw.rect(screen, GREEN, (10,15,(self.current_health/self.max_health)*100 * 3, 20)) #Green
             self.current_color = GREEN
         elif self.current_health >= self.max_health * .25:
-            pyg.draw.rect(screen, YELLOW, (10,15, self.current_health * 3, 20))#YELLOW
+            pyg.draw.rect(screen, YELLOW, (10,15, (self.current_health/self.max_health)*100 * 3, 20))#YELLOW
+            print((self.current_health/self.max_health)*100 * 3)
             self.current_color = YELLOW
         elif self.current_health >= 0:
-            pyg.draw.rect(screen, RED, (10, 15, self.current_health * 3, 20))#RED
+            pyg.draw.rect(screen, RED, (10, 15, (self.current_health/self.max_health)*100 * 3, 20))#RED
             self.current_color = RED
         
         pyg.draw.rect(screen, WHITE, (10,15, self.bar_lenth * 3,  20), 4)
@@ -778,7 +780,7 @@ class UI():
         screen.blit(hp_surface, hp_rect)
 
     def display_XP_txt(self):
-        XP_surface = font.render(f"{player.xp} XP", False, GREEN)
+        XP_surface = font.render(f"{int(self.NextLVL - player.xp)} XP needed", False, GREEN)
         XP_rect = XP_surface.get_rect(center = (1162 , 30))
         screen.blit(XP_surface, XP_rect)
     
@@ -797,6 +799,38 @@ class UI():
         if player.xp >= self.NextLVL:
             player.xp = 0
             self.LVL += 1
+            ui.Current_State = 4 ## Level up State
+            self.LVL_UP()
+
+    def LVL_UP(self):
+        Button1TXT_surface_Top = font.render("Upgrade", False, RED)
+        Button1TXT_rect_Top = Button1TXT_surface_Top.get_rect(center = (WIDTH//2-350,HEIGHT//2-30))
+        Button1TXT_surface_Bot = font.render("Health", False, RED)
+        Button1TXT_rect_Bot = Button1TXT_surface_Bot.get_rect(center = (WIDTH//2-350,HEIGHT//2+120))
+
+        Button2TXT_surface_Top = font.render(f"Upgrade", False, RED)
+        Button2TXT_rect_Top = Button2TXT_surface_Top.get_rect(center = (WIDTH//2,HEIGHT//2-30))
+        Button2TXT_surface_Bot = font.render(f"Damage!", False, RED)
+        Button2TXT_rect_Bot = Button2TXT_surface_Bot.get_rect(center = (WIDTH//2,HEIGHT//2+120))
+
+        Button3TXT_surface_Top = font.render("Upgrade", False, RED)
+        Button3TXT_rect_Top = Button3TXT_surface_Top.get_rect(center = (WIDTH//2+400,HEIGHT//2-20))
+        Button3TXT_surface_Bot = font.render("Attack Speed", False, RED)
+        Button3TXT_rect_Bot = Button3TXT_surface_Bot.get_rect(center = (WIDTH//2+400,HEIGHT//2+120))
+        
+        LVLUP_surface = font.render("Level UP!", False, GREEN)
+        lvlup_rect = LVLUP_surface.get_rect(center = (WIDTH//2,HEIGHT//2-200))
+        screen.blit(LVLUP_surface, lvlup_rect)
+
+        screen.blit(Button1TXT_surface_Top, Button1TXT_rect_Top)
+        screen.blit(Button1TXT_surface_Bot, Button1TXT_rect_Bot)
+
+        screen.blit(Button2TXT_surface_Top, Button2TXT_rect_Top)
+        screen.blit(Button2TXT_surface_Bot, Button2TXT_rect_Bot)
+        if player.Base_CD >= 30:
+            screen.blit(Button3TXT_surface_Top, Button3TXT_rect_Top)
+            screen.blit(Button3TXT_surface_Bot, Button3TXT_rect_Bot)
+
 
     def update_time(self, time):
         self.time = time - self.lastroundtime
@@ -813,7 +847,7 @@ class UI():
                 
             if self.debugtimer > 0 and self.debugtimerbool:
                 self.display_Debug_txt()
-                print(f'{self.debugtimer} || {self.debugtimerbool}')
+               # print(f'{self.debugtimer} || {self.debugtimerbool}')
         else:
             self.debugTXT = "DEFEAT"
             self.display_Debug_txt()
@@ -991,7 +1025,7 @@ class Button(pyg.sprite.Sprite):
         self.pos = (Xpos, Ypos)
         self.rect.topleft =self.pos
         self.isClicked=False
-        self.buttonFunction = ["Start","Quit","Restart","Main Menu"]
+        self.buttonFunction = ["Start","Quit","Restart","Main Menu","none"]
         self.assignedFunction = function
             
     def update(self):
@@ -999,7 +1033,7 @@ class Button(pyg.sprite.Sprite):
         if DEBUG == True:
             pyg.draw.rect(screen, RED, self.rect, width = 2)
 
-    def _Function(self):
+    def ButtonAction(self):
         if self.buttonFunction[self.assignedFunction] == self.buttonFunction[0]:  ##Start Button
             ui.Current_State = 1
         elif self.buttonFunction[self.assignedFunction] == self.buttonFunction[1]:  ##Quit Button
@@ -1010,6 +1044,9 @@ class Button(pyg.sprite.Sprite):
         elif self.buttonFunction[self.assignedFunction] == self.buttonFunction[3]:  ##Main Menu Button
             self.ResetGame()
             ui.Current_State = 0
+        elif self.buttonFunction[self.assignedFunction] == self.buttonFunction[4]: #No Function
+            pass
+
     def ResetGame(self):
         for enemy in enemy_group:
             enemy.isDead = True
@@ -1033,6 +1070,19 @@ class Button(pyg.sprite.Sprite):
         ui.max_health = 100
         game_level.num_of_enemies_spawned = 0
 
+    def levelup(self, button = 99):
+        if button == 0: ## Health Up
+                player.health += 50
+                ui.max_health += 50
+                ui.current_health += 50
+        elif button == 1: ## Damage Up
+                player.dmg += 5
+        elif button == 2: ## Attack Speed up
+                player.Base_CD -= 5
+        else:
+            pass
+        ui.Current_State = 1
+
 class Menu():
     pass
 
@@ -1041,12 +1091,20 @@ player = Player()
 ui = UI()
 game_level = Gamelevel()
 
+
+
+
+
 def main():
     Start_Button = Button((WIDTH//2)-200, HEIGHT//2-150, function=0)
     Quit_Button_1 = Button(WIDTH//2 -200, HEIGHT//2+200, img="src\sprites\Buttons\Button-Quit.png", function=1)
     Restart_Button = Button(100, HEIGHT//2+200, img="src\sprites\Buttons\Button-Restart.png", function=2)
     Quit_Button_2 = Button(WIDTH//2 +400, HEIGHT//2+200, img="src\sprites\Buttons\Button-Quit.png", function=1)
     Menu_Button_2 = Button(WIDTH//2-200, HEIGHT//2, img="src\sprites\Buttons\Button-MainMenu.png", function=3)
+
+    Upgrade_1_Button = Button(WIDTH//2-400, HEIGHT//2, img=rf"src\sprites\Buttons\UpArrow.png", function=4)
+    Upgrade_2_Button = Button(WIDTH//2-50, HEIGHT//2, img=rf"src\sprites\Buttons\UpArrow.png", function=4)
+    Upgrade_3_Button = Button(WIDTH//2+350, HEIGHT//2, img=rf"src\sprites\Buttons\UpArrow.png", function=4)
     clock.tick(FPS)
     
     
@@ -1062,10 +1120,10 @@ def main():
                     exit()
                 if Start_Button.rect.collidepoint(mouseLoc):
                     if event.type == pyg.MOUSEBUTTONDOWN:
-                        Start_Button._Function()
+                        Start_Button.ButtonAction()
                 if Quit_Button_1.rect.collidepoint(mouseLoc):
                     if event.type == pyg.MOUSEBUTTONDOWN:
-                        Quit_Button_1._Function()
+                        Quit_Button_1.ButtonAction()
             screen.fill('black')
             Start_Button.update()
             Quit_Button_1.update()
@@ -1081,14 +1139,18 @@ def main():
                     exit()
                 if event.type == pyg.KEYDOWN:  ## Pause Game
                     if event.key == pyg.K_ESCAPE:
-                        print("PAUSED")
                         ui.Current_State=2 ## Pause Game
                     if DEBUG == True:
                         if event.key == pyg.K_F1:
-                            print("F1")
+                            print("F1: Spawn Test baddie")
                             ui.debugTXT = f"Spawn Test Bad guy at: {player.pos[0]+600,player.pos[1]+600}"
                             ui.debugtimerbool = True
-                            Testbadguy = Enemy(MinDist= 200, position=(player.pos[0]+600,player.pos[1]+600))
+                            Testbadguy = Enemy(name= "Sold",  MinDist= 200, position=(player.pos[0]+600,player.pos[1]+600))
+                        if event.key == pyg.K_F2:
+                            print("F2: Level up")
+                            ui.debugTXT = f"granting 100xp"
+                            ui.debugtimerbool = True
+                            player.xp += 1000
                 if event.type == pyg.KEYUP:
                     pass
 
@@ -1122,16 +1184,46 @@ def main():
                     exit()
                 if Restart_Button.rect.collidepoint(mouseLoc):
                     if event.type == pyg.MOUSEBUTTONDOWN:
-                        Restart_Button._Function()
+                        Restart_Button.ButtonAction()
                 if Quit_Button_2.rect.collidepoint(mouseLoc):
                     if event.type == pyg.MOUSEBUTTONDOWN:
-                        Quit_Button_2._Function()
+                        Quit_Button_2.ButtonAction()
                 if Menu_Button_2.rect.collidepoint(mouseLoc):
                     if event.type == pyg.MOUSEBUTTONDOWN:
-                        Menu_Button_2._Function()
+                        Menu_Button_2.ButtonAction()
+
             Menu_Button_2.update()
             Restart_Button.update()
             Quit_Button_2.update()
+            pyg.display.update()
+        
+        while ui.Game_state[ui.Current_State] == ui.Game_state[4]:  ##Level up State
+            mouseLoc = pyg.mouse.get_pos()
+            keys = pyg.key.get_pressed()
+            for event in pyg.event.get():
+                if event.type == pyg.QUIT:
+                    pyg.quit()
+                    exit()
+                if event.type == pyg.KEYDOWN:
+                    if event.key == pyg.K_ESCAPE:
+                        ui.Current_State=1 ## Unpause Game
+            if Upgrade_1_Button.rect.collidepoint(mouseLoc):
+                    if event.type == pyg.MOUSEBUTTONDOWN:
+                        Upgrade_1_Button.levelup(0)
+                        if DEBUG == True : print("HP UP")
+            if Upgrade_2_Button.rect.collidepoint(mouseLoc):
+                    if event.type == pyg.MOUSEBUTTONDOWN:
+                        Upgrade_2_Button.levelup(1)
+                        if DEBUG == True :print("DMG UP")
+            if Upgrade_3_Button.rect.collidepoint(mouseLoc) and player.Base_CD >= 30:
+                    if event.type == pyg.MOUSEBUTTONDOWN:
+                        if DEBUG == True :print(player.Base_CD)
+                        Upgrade_3_Button.levelup(2)
+                        if DEBUG == True :print("AS UP")
+            Upgrade_1_Button.update()
+            Upgrade_2_Button.update()
+            if player.Base_CD >= 30:
+                Upgrade_3_Button.update()
             pyg.display.update()
 
 if __name__ == "__main__":
